@@ -78,6 +78,11 @@ void Save(){
   EEPROM.write(i++, Volume);
   EEPROM.write(i++, Luminance);
   EEPROM.write(i++, SleepTimeOut);
+  screen.Clear(0x00);
+  screen.print("SAVEDATA", 18, 16);
+  screen.print(" SAVING ", 18, 24);
+  screen.update();
+  delay(500);
 }
 void Load(){  
   // Signiture
@@ -106,11 +111,21 @@ void Load(){
   Volume = EEPROM.read(i++);
   Luminance = EEPROM.read(i++);
   SleepTimeOut = EEPROM.read(i++);
+  screen.Clear(0x00);
+  screen.print("SAVEDATA", 18, 16);
+  screen.print("LOADING", 18, 24);
+  screen.update();
+  delay(1000);
 }
 void Clear(){
   for(uint8_t i=0; i<128; i++){
     EEPROM.write(i, 0);
   }
+  screen.Clear(0x00);
+  screen.print("SAVEDATA", 18, 16);
+  screen.print("REMOVEING", 18, 24);
+  screen.update();
+  delay(3000);
   asm volatile ("  jmp 0");  
 }
 // Input
@@ -271,7 +286,6 @@ void Update(){
     MenuLauncher();
   }
   if(btnDownR){
-    Clear();
   }
   if(btnR){
     screen.print("CLER", 1, 32);

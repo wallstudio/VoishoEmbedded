@@ -7,6 +7,7 @@
 #include <SoftwareSerial.h>
 #include <DFPlayer_Mini_Mp3.h>
 #include <avr/pgmspace.h>
+#include <EEPROM.h>
 #include "bitmap.h"
 #include "Game2D.h"
 #include "QREncode.h"
@@ -53,6 +54,65 @@ uint8_t Dirty = 0;
 uint8_t Volume = VOLUME;
 uint8_t Luminance = 4;
 uint8_t SleepTimeOut = 100;
+void Save(){
+  // Signiture
+  uint8_t i = 0;
+  EEPROM.write(i++, 'Y');
+  EEPROM.write(i++, 'u');
+  EEPROM.write(i++, 'k');
+  EEPROM.write(i++, 'a');
+  EEPROM.write(i++, 'M');
+  EEPROM.write(i++, 'a');
+  EEPROM.write(i++, 'k');
+  EEPROM.write(i++, 'i');
+  // Data
+  for(uint8_t j=0; j<8; j++){
+    EEPROM.write(i, Frame >> (8*j) & 0x000000000000FF);
+    i++;
+  }
+  EEPROM.write(i++, Life);
+  EEPROM.write(i++, Love);
+  EEPROM.write(i++, Hungery);
+  EEPROM.write(i++, Sick);
+  EEPROM.write(i++, Dirty);
+  EEPROM.write(i++, Volume);
+  EEPROM.write(i++, Luminance);
+  EEPROM.write(i++, SleepTimeOut);
+}
+void Load(){  
+  // Signiture
+  uint8_t i = 0;
+  bool sig = true;
+  sig &= EEPROM.read(i++) == 'Y';
+  sig &= EEPROM.read(i++) == 'u';
+  sig &= EEPROM.read(i++) == 'k';
+  sig &= EEPROM.read(i++) == 'a';
+  sig &= EEPROM.read(i++) == 'M';
+  sig &= EEPROM.read(i++) == 'a';
+  sig &= EEPROM.read(i++) == 'k';
+  sig &= EEPROM.read(i++) == 'i';
+  if(!sig) return;
+  // Data
+  Frame = 0;
+  for(uint8_t j=0; j<8; j++){
+    Frame += EEPROM.read(i) << (8*j);
+    i++;
+  }
+  Life = EEPROM.read(i++);
+  Love = EEPROM.read(i++);
+  Hungery = EEPROM.read(i++);
+  Sick = EEPROM.read(i++);
+  Dirty = EEPROM.read(i++);
+  Volume = EEPROM.read(i++);
+  Luminance = EEPROM.read(i++);
+  SleepTimeOut = EEPROM.read(i++);
+}
+void Clear(){
+  for(uint8_t i=0; i<128; i++){
+    EEPROM.write(i, 0);
+  }
+  asm volatile ("  jmp 0");  
+}
 // Input
 bool btnL,btnC, btnR, btnDownL, btnDownC, btnDownR ,btnUpL, btnUpC, btnUpR;
 void BtnDetectAll(){
@@ -96,6 +156,7 @@ void InitIO(){
   }
 }
 void setup(){
+  Load();
   InitIO();
   screen.ClearInitLCD();
   screen.setFont(SmallFont);
@@ -193,7 +254,6 @@ void Update(){
   Maki->Rend();
   // Input
   if(btnDownL){
-    //mp3_play(SE_MUSIC_0);
   }
   if(btnL){
     screen.printNumI(Frame >> 48 & 0x000000000000FFFF, 1, 8);
@@ -206,9 +266,13 @@ void Update(){
     MenuLauncher();
   }
   if(btnDownR){
-    mp3_play(SE_GYN_0);
-    //Mingame0Launcher();
+    Clear();
   }
+  if(btnR){
+    screen.print("CLER", 1, 32);
+  }
+  // AutoSave
+  if(Frame%5000 == 0) Save();
 }
 
 //............................................................
@@ -316,10 +380,9 @@ bool Config(uint8_t *timer, uint8_t selectionCount, uint8_t *confNo, int8_t *mod
   for(uint8_t i=0; i<Volume/8; i++) screen.print("*", 50+i*6, 9);
   screen.print(" LIGHT :", 1, 17);
   for(uint8_t i=0; i<Luminance; i++) screen.print("*", 50+i*6, 17);
-  screen.print(" SLEEP :", 1, 25);
-  for(uint8_t i=0; i<SleepTimeOut/25; i++) screen.print("*", 50+i*6, 25);
-  screen.print(" [BACK]", 43, 32);
-  screen.print(">", 1+(*confNo)/3*42, 9+8*(*confNo));
+  screen.print(" [CLEAR]",37, 25);
+  screen.print(" [BACK ]", 37, 32);
+  screen.print(">", 1+(*confNo)/2*36, 9+8*(*confNo));
   // Input
   if(btnDownL){
     mp3_play(SE_BTN_OK);
@@ -336,10 +399,6 @@ bool Config(uint8_t *timer, uint8_t selectionCount, uint8_t *confNo, int8_t *mod
           if(Luminance == 0) break;
           Luminance -= 4;
           break;
-        case 2: // SleepTimeOut
-          if(SleepTimeOut == 0) break;
-          SleepTimeOut -= 25;
-          break;
         default: break;
       }
     }
@@ -351,10 +410,14 @@ bool Config(uint8_t *timer, uint8_t selectionCount, uint8_t *confNo, int8_t *mod
       switch(*confNo){
         case 0: // Volume
         case 1: // Luminuce
-        case 2: // SleepTimeOut
           *mode = *confNo;
           break;
+        case 2: // Clear
+          Clear();
+          return false;
+          break;
         case 3: // Return
+          Save();
           return false;
           break;
         default: break;
@@ -385,10 +448,6 @@ bool Config(uint8_t *timer, uint8_t selectionCount, uint8_t *confNo, int8_t *mod
         case 1: // Luminuce
           if(Luminance == 4) break;
           Luminance += 4;
-          break;
-        case 2: // SleepTimeOut
-          if(SleepTimeOut == 100) break;
-          SleepTimeOut += 25;
           break;
         default: break;
       }

@@ -40,9 +40,9 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 // GameDefine ................................................
 //............................................................
 #define MENU_SEL_CNT 7
-int GameFps = 60;
+uint8_t GameFps = 60;
 bool BufL, BufC, BufR;
-long Frame = 0;
+uint64_t Frame = 0;
 // Status
 uint8_t Life = 6;
 uint8_t Love = 0;
@@ -108,7 +108,6 @@ void loop(){
   screen.update();
   delay(1000/GameFps);
 }
-bool Minigame0(int countDown);
 //............................................................
 //............................................................
 //......................... GAME MAIN ........................
@@ -210,7 +209,7 @@ void Update(){
 //............................................................
 //............................................................
 //............................................................
-bool Menu(int *timer){
+bool Menu(uint8_t *timer){
   SceneInit();
   // Interface
   LifeSign->Rend();
@@ -276,8 +275,8 @@ bool Menu(int *timer){
   return true;
 }
 void MenuLauncher(){
-  int timeOut = 100;
-  for(int i=0; i<timeOut; i++){
+  uint8_t timeOut = 100;
+  for(uint8_t i=0; i<timeOut; i++){
     if(!Menu(&i)) break;
     screen.update();
   }
@@ -406,42 +405,7 @@ void ConfigLauncher(){
 //............................................................
 //............................................................
 //............................................................
-void Mingame0Launcher(){
-    //Manual
-    screen.Clear(0x00);
-    screen.print("MINIGAME START", 0, 10);
-    screen.print("POSITION KMAKI", 0, 23);
-    screen.print("PLZ PUSH BUTON", 0, 31);
-    screen.update();
-    delay(10000);
-    //Main
-    int loveCnt = 0;
-    for(int i=300; i>=0; i--) Mingame0(i, &loveCnt);
-    //Result
-    screen.Clear(0x00);
-    screen.print("YOUR SCORE!", 0, 10);
-    screen.print(" LOVE: ", 0, 20);
-    screen.printNumI(loveCnt, 40, 20);
-    screen.update();
-    delay(10000);
-    //Future QR
-    screen.Clear(0x00);
-    screen.print("FUTURE", 0, 2);
-    screen.print("  ->  ", 0, 10);
-    screen.print("PLZ COME", 0, 32);
-    screen.print("KOETSUKI", 0, 40);
-    uint8_t infoData[] = "goo.gl/eWF1m2";
-    uint8_t qrTex[21*3*2];
-    GameObject* qr = new GameObject(&screen, QREncode(&screen, infoData, sizeof(infoData), qrTex), 21, 21);
-    qr->Scl = 1;
-    qr->Tx = 55;
-    qr->Ty = 10;
-    qr->Rend();
-    screen.update();
-    delay(30000);
-    delete qr;
-}
-void Mingame0(int countDown, int* loveCnt){
+void Mingame0(uint8_t countDown, uint8_t* loveCnt){
   SceneInit();
   //Information
   screen.print("TIME", 1, 1);
@@ -484,6 +448,41 @@ void Mingame0(int countDown, int* loveCnt){
       // fail effect
   }
   screen.update();
+}
+void Mingame0Launcher(){
+    //Manual
+    screen.Clear(0x00);
+    screen.print("MINIGAME START", 0, 10);
+    screen.print("POSITION KMAKI", 0, 23);
+    screen.print("PLZ PUSH BUTON", 0, 31);
+    screen.update();
+    delay(10000);
+    //Main
+    uint8_t loveCnt = 0;
+    for(uint8_t i=300; i>=0; i--) Mingame0(i, &loveCnt);
+    //Result
+    screen.Clear(0x00);
+    screen.print("YOUR SCORE!", 0, 10);
+    screen.print(" LOVE: ", 0, 20);
+    screen.printNumI(loveCnt, 40, 20);
+    screen.update();
+    delay(10000);
+    //Future QR
+    screen.Clear(0x00);
+    screen.print("FUTURE", 0, 2);
+    screen.print("  ->  ", 0, 10);
+    screen.print("PLZ COME", 0, 32);
+    screen.print("KOETSUKI", 0, 40);
+    uint8_t infoData[] = "goo.gl/eWF1m2";
+    uint8_t qrTex[21*3*2];
+    GameObject* qr = new GameObject(&screen, QREncode(&screen, infoData, sizeof(infoData), qrTex), 21, 21);
+    qr->Scl = 1;
+    qr->Tx = 55;
+    qr->Ty = 10;
+    qr->Rend();
+    screen.update();
+    delay(30000);
+    delete qr;
 }
 //............................................................
 //............................................................

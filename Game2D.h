@@ -7,9 +7,9 @@
 
 typedef struct texture{ //8 Byte
     uint8_t *Data;
-    int W;
-    int H;
-    int S;
+    uint8_t W;
+    uint8_t H;
+    uint8_t S;
 } Texture;
 enum Invert{
     None,
@@ -33,13 +33,13 @@ class GameLCD : public LCD5110{
 class GameObject{
     public:
         bool Active;
-        int Tx, Ty, Sx, Sy, Sw, Sh, Scl, TexNo;
+        uint8_t Tx, Ty, Sx, Sy, Sw, Sh, Scl, TexNo;
         Invert Inv;
-        int TexQuant;
+        uint8_t TexQuant;
         Texture *Tex;
         bool RamTex;
         uint8_t *Bitmap;
-        int BitmapW, BitmapH;
+        uint8_t BitmapW, BitmapH;
     private:
         GameLCD *Screen;
     public:

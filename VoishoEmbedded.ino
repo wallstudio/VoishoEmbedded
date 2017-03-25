@@ -24,17 +24,18 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 //............................................................
 // Audio .....................................................
 //............................................................
-#define VOLUME 30
-#define SE_BTN_OK 1
-#define SE_BTN_NG 2
-#define SE_GYN_0  3
+#define VOLUME      32
+#define SE_BTN_OK   1
+#define SE_BTN_NG   2
+#define SE_GYN_0    3
+#define SE_MUSIC_0  4
 //............................................................
 // I/O .......................................................
 //............................................................
 #define I0 14
 #define I1 15
 #define I2 16
-#define O0 2
+#define O0 7
 //............................................................
 // GameDefine ................................................
 //............................................................
@@ -43,14 +44,15 @@ int GameFps = 60;
 bool BufL, BufC, BufR;
 long Frame = 0;
 // Status
-int Life = 6;
-int Love = 0;
-int Hungery = 0;
-int Sick = 0;
-int Dirty = 0;
-// Setting
-int Volume = VOLUME;
-int Luminance = 0;
+uint8_t Life = 6;
+uint8_t Love = 0;
+uint8_t Hungery = 0;
+uint8_t Sick = 0;
+uint8_t Dirty = 0;
+// Config
+uint8_t Volume = VOLUME;
+uint8_t Luminance = 4;
+uint8_t SleepTimeOut = 100;
 // Input
 bool btnL,btnC, btnR, btnDownL, btnDownC, btnDownR ,btnUpL, btnUpC, btnUpR;
 void BtnDetectAll(){
@@ -79,7 +81,7 @@ void SceneInit(){
 void InitAudio(){
   mp3_set_serial(Serial);
   delay(1);
-  mp3_set_volume(VOLUME);
+  mp3_set_volume(Volume);
 }
 void InitIO(){
   Serial.begin(9600);
@@ -87,7 +89,11 @@ void InitIO(){
   pinMode(I0,INPUT);
   pinMode(I1,INPUT);
   pinMode(I2,INPUT);
-  digitalWrite(O0, HIGH);
+  if(Luminance > 0){
+    digitalWrite(O0, HIGH);
+  }else{
+    digitalWrite(O0, LOW);
+  }
 }
 void setup(){
   InitIO();
@@ -186,17 +192,18 @@ void Update(){
   Maki->Rend();
   // Input
   if(btnDownL){
-    mp3_play(SE_BTN_NG);
+    mp3_play(SE_MUSIC_0);
   }
   if(btnDownC){
     mp3_play(SE_BTN_OK);
     MenuLauncher();
   }
   if(btnDownR){
-    mp3_play(SE_BTN_NG);
+    mp3_play(SE_GYN_0);
     //Mingame0Launcher();
   }
 }
+
 //............................................................
 //............................................................
 //......................... MENU SCENE .......................
@@ -213,6 +220,10 @@ bool Menu(int *timer){
   screen.print(" OK ", 30, 40);
   screen.print("  > ", 58, 40);
   // Selection
+  selectionIcons->Tx = 6;
+  selectionIcons->Ty = 10;
+  selectionsText->Tx = 6;
+  selectionsText->Ty = 30;
   selectionIcons->Rend();
   selectionsText->Rend();
   screen.printNumI(selectionIcons->TexQuant, 44, 20);
@@ -246,6 +257,7 @@ bool Menu(int *timer){
       case 4: // Garally
         break;
       case 5: // Config
+        ConfigLauncher();
         break;
       case 6: // Return
         return false;
@@ -264,9 +276,126 @@ bool Menu(int *timer){
   return true;
 }
 void MenuLauncher(){
-  int menuTimeOut = 100;
-  for(int i=0; i<menuTimeOut; i++){
+  int timeOut = 100;
+  for(int i=0; i<timeOut; i++){
     if(!Menu(&i)) break;
+    screen.update();
+  }
+}
+
+//............................................................
+//............................................................
+//......................... CONFIG SCENE .....................
+//............................................................
+//............................................................
+//............................................................
+bool Config(uint8_t *timer, uint8_t selectionCount, uint8_t *confNo, int8_t *mode){
+  SceneInit();
+  // Interface
+  selectionsText->Tx = 30;
+  selectionsText->Ty = 1;
+  selectionsText->Rend();
+  if(*mode < 0){
+    screen.print(" UP ", 2, 40);
+    screen.print(" OK ", 30, 40);
+    screen.print("DOWN", 58, 40);
+  }else{
+    screen.print(" -  ", 2, 40);
+    screen.print(" OK ", 30, 40);
+    screen.print("  + ", 58, 40);
+  }
+  // Paramater
+  screen.print(" VOLUEM:", 1, 9);
+  for(uint8_t i=0; i<Volume/8; i++) screen.print("*", 50+i*6, 9);
+  screen.print(" LIGHT :", 1, 17);
+  for(uint8_t i=0; i<Luminance; i++) screen.print("*", 50+i*6, 17);
+  screen.print(" SLEEP :", 1, 25);
+  for(uint8_t i=0; i<SleepTimeOut/25; i++) screen.print("*", 50+i*6, 25);
+  screen.print(" [BACK]", 43, 32);
+  screen.print(">", 1+(*confNo)/3*42, 9+8*(*confNo));
+  // Input
+  if(btnDownL){
+    mp3_play(SE_BTN_OK);
+    if(*mode < 0){
+      *confNo += selectionCount - 1;
+      *confNo %= selectionCount;
+    }else{
+      switch(*confNo){
+        case 0: // Volume
+          if(Volume == 0) break;
+          Volume -= 8;
+          break;
+        case 1: // Luminuce
+          if(Luminance == 0) break;
+          Luminance -= 4;
+          break;
+        case 2: // SleepTimeOut
+          if(SleepTimeOut == 0) break;
+          SleepTimeOut -= 25;
+          break;
+        default: break;
+      }
+    }
+  }
+  if(btnDownC){
+    mp3_play(SE_BTN_OK);
+    *timer = 0;
+    if(*mode < 0){
+      switch(*confNo){
+        case 0: // Volume
+        case 1: // Luminuce
+        case 2: // SleepTimeOut
+          *mode = *confNo;
+          break;
+        case 3: // Return
+          return false;
+          break;
+        default: break;
+      }
+    }else{
+      InitAudio();
+      mp3_play(SE_BTN_OK);
+      if(Luminance > 0){
+        digitalWrite(O0, HIGH);
+      }else{
+        digitalWrite(O0, LOW);
+      }
+      *mode = -1;
+    }
+  }
+  if(btnDownR){
+    mp3_play(SE_BTN_OK);
+    *timer = 0;
+    if(*mode < 0){
+      *confNo += 1;
+      *confNo %= selectionCount;
+    }else{
+        switch(*confNo){
+        case 0: // Volume
+          if(Volume == 32) break;
+          Volume += 8;
+          break;
+        case 1: // Luminuce
+          if(Luminance == 4) break;
+          Luminance += 4;
+          break;
+        case 2: // SleepTimeOut
+          if(SleepTimeOut == 100) break;
+          SleepTimeOut += 25;
+          break;
+        default: break;
+      }
+    }
+  }
+  return true;
+}
+void ConfigLauncher(){
+  uint8_t activSelection = 0;
+  int8_t inSelection = -1;  // Common
+  uint8_t selectionCount = 4;
+  uint8_t timeOut = 255;
+  for(uint8_t i=0; i<timeOut; i++){
+    if(!Config(&i, selectionCount, &activSelection, &inSelection)) break;
     screen.update();
   }
 }

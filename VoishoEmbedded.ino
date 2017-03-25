@@ -188,6 +188,8 @@ GameObject *Hurt;
 // Menu
 GameObject *selectionIcons;
 GameObject *selectionsText;
+// Garally
+GameObject *GarallyImages;
 //............................................................
 //............................................................
 void Start(){
@@ -230,6 +232,9 @@ void Start(){
     Bmp_txt_modoru
   };
   selectionsText = new GameObject(&screen, selectionsTextTex, MENU_SEL_CNT, 0, 6, 30);
+  // Garally
+  uint8_t *garallyTex[] = {Bmp_gyun0, Bmp_gyun1};
+  GarallyImages = new GameObject(&screen, garallyTex, 2);
 }
 //............................................................
 //............................................................
@@ -326,6 +331,7 @@ bool Menu(uint8_t *timer){
       case 3: // Game
         break;
       case 4: // Garally
+        GarallyLauncher();
         break;
       case 5: // Config
         ConfigLauncher();
@@ -462,6 +468,56 @@ void ConfigLauncher(){
   uint8_t timeOut = 255;
   for(uint8_t i=0; i<timeOut; i++){
     if(!Config(&i, selectionCount, &activSelection, &inSelection)) break;
+    screen.update();
+  }
+}
+
+//............................................................
+//............................................................
+//......................... GARALLY SCENE ....................
+//............................................................
+//............................................................
+//............................................................
+bool Garally(uint8_t *timer , uint8_t *imageNo){
+  SceneInit();
+  // Interface
+  screen.print("/", 66, 2);
+  screen.printNumI(GarallyImages->TexQuant, 71, 2);
+  screen.printNumI(*imageNo+1, 59, 2);
+  selectionsText->Tx = 30;
+  selectionsText->Ty = 1;
+  selectionsText->Rend();
+  screen.print(" <  ", 2, 40);
+  screen.print("BACK", 30, 40);
+  screen.print("  > ", 58, 40);
+  // Image
+  GarallyImages->TexNo = *imageNo;
+  GarallyImages->Tx = 30;
+  GarallyImages->Ty = 11;
+  GarallyImages->Rend();
+  // Input
+  if(btnDownL){
+    mp3_play(SE_BTN_OK);
+    *imageNo += GarallyImages->TexQuant - 1;
+    *imageNo %= GarallyImages->TexQuant;
+  }
+  if(btnDownC){
+    mp3_play(SE_BTN_OK);
+    return false;
+  }
+  if(btnDownR){
+    mp3_play(SE_BTN_OK);
+    *timer = 0;
+    *imageNo += 1;
+    *imageNo %= GarallyImages->TexQuant;
+  }
+  return true;
+}
+void GarallyLauncher(){
+  int8_t imageNo = 0;
+  uint8_t timeOut = 255;
+  for(uint8_t i=0; i<timeOut; i++){
+    if(!Garally(&i, &imageNo)) break;
     screen.update();
   }
 }

@@ -106,7 +106,6 @@ void loop(){
   screen.Clear(0x00);
   Update();
   screen.update();
-  delay(1000/GameFps);
 }
 //............................................................
 //............................................................
@@ -119,7 +118,7 @@ void loop(){
 GameObject *LifeSign;
 GameObject *LoveSign;
 GameObject *HungrySign;
-GameObject *SichSign;
+GameObject *SickSign;
 GameObject *DirtySign;
 // CHaractor
 GameObject *Maki;
@@ -135,13 +134,13 @@ void Start(){
   uint8_t *lifeTex[] = {Bmp_plus0, Bmp_plus1, Bmp_plus2, Bmp_plus3, Bmp_plus4, Bmp_plus5, Bmp_plus6};
   LifeSign = new GameObject(&screen, lifeTex, 7, 6, 2, 2);
   uint8_t *loveTex[] = {Bmp_hurt0, Bmp_hurt1, Bmp_hurt2, Bmp_hurt3, Bmp_hurt4, Bmp_hurt5, Bmp_hurt6};
-  LoveSign = new GameObject(&screen, loveTex, 7, 3, 59, 2);
+  LoveSign = new GameObject(&screen, loveTex, 7, 6, 59, 2);
   uint8_t *hungryTex[] = {Bmp_meal};
   HungrySign = new GameObject(&screen, hungryTex, 1, 0, 7, 11);
   uint8_t *sickTex[] = {Bmp_poison};
-  SichSign = new GameObject(&screen, sickTex, 1, 0, 58, 11);
+  SickSign = new GameObject(&screen, sickTex, 1, 0, 58, 11);
   uint8_t *dirtyTex[] = {Bmp_dirt0, Bmp_dirt1, Bmp_dirt2};
-  DirtySign = new GameObject(&screen, dirtyTex, 1, 0, 5, 30);
+  DirtySign = new GameObject(&screen, dirtyTex, 3, 2, 5, 30);
   // Charactor
   uint8_t *makiTex[] = {Bmp_gyun0, Bmp_gyun1};
   Maki = new GameObject(&screen, makiTex, 2);
@@ -176,13 +175,16 @@ void Start(){
 void Update(){
   SceneInit();
   // Interface
+  LifeSign->TexNo = Life;
   LifeSign->Rend();
+  LoveSign->TexNo = Love;
   LoveSign->Rend();
-  screen.print(" -- ", 2, 40);
+  screen.print("DEV ", 2, 40);
   screen.print("MENU", 30, 40);
   screen.print(" -- ", 58, 40);
-  HungrySign->Rend();
-  SichSign->Rend();
+  if(Hungery) HungrySign->Rend();
+  if(Sick) SickSign->Rend();
+  DirtySign->TexNo = Dirty;
   DirtySign->Rend();
   // Maki
   Maki->Ty = 10;
@@ -191,7 +193,13 @@ void Update(){
   Maki->Rend();
   // Input
   if(btnDownL){
-    mp3_play(SE_MUSIC_0);
+    //mp3_play(SE_MUSIC_0);
+  }
+  if(btnL){
+    screen.printNumI(Frame >> 48 & 0x000000000000FFFF, 1, 8);
+    screen.printNumI(Frame >> 32 & 0x000000000000FFFF, 1, 16);
+    screen.printNumI(Frame >> 16 & 0x000000000000FFFF, 1, 24);
+    screen.printNumI(Frame >> 0  & 0x000000000000FFFF, 1, 32);
   }
   if(btnDownC){
     mp3_play(SE_BTN_OK);

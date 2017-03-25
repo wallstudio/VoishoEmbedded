@@ -329,7 +329,7 @@ bool Menu(uint8_t *timer){
       case 2: // Clean
         break;
       case 3: // Game
-        break;
+        Mingame0Launcher();
       case 4: // Garally
         GarallyLauncher();
         break;

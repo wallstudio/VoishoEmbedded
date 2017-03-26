@@ -1,4 +1,4 @@
-//Locate 6388 byte.
+//Locate 6572 byte.
 extern uint8_t Bmp_hurt[];
 extern uint8_t Bmp_hurt0[];
 extern uint8_t Bmp_hurt1[];
@@ -9,6 +9,7 @@ extern uint8_t Bmp_hurt5[];
 extern uint8_t Bmp_hurt6[];
 extern uint8_t Bmp_meal[];
 extern uint8_t Bmp_menu_clean[];
+extern uint8_t Bmp_menu_communication[];
 extern uint8_t Bmp_menu_game[];
 extern uint8_t Bmp_menu_garally[];
 extern uint8_t Bmp_menu_lasagna[];
@@ -33,6 +34,7 @@ extern uint8_t Bmp_txt_modoru[];
 extern uint8_t Bmp_txt_naderu[];
 extern uint8_t Bmp_txt_settei[];
 extern uint8_t Bmp_txt_souji[];
+extern uint8_t Bmp_txt_tushin[];
 extern uint8_t Bmp_ui[];
 extern uint8_t Bmp_ui_wire[];
 extern uint8_t Bmp_wallstudio[];

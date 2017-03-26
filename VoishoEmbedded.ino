@@ -40,7 +40,7 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 //............................................................
 // GameDefine ................................................
 //............................................................
-#define MENU_SEL_CNT 7
+#define MENU_SEL_CNT 8
 uint8_t GameFps = 60;
 bool BufL, BufC, BufR;
 uint64_t Frame = 0;
@@ -205,6 +205,8 @@ GameObject *selectionIcons;
 GameObject *selectionsText;
 // Garally
 GameObject *GarallyImages;
+// Communication
+GameObject *ComImages;
 //............................................................
 //............................................................
 void Start(){
@@ -233,6 +235,7 @@ void Start(){
     Bmp_menu_clean, 
     Bmp_menu_game, 
     Bmp_menu_garally, 
+    Bmp_menu_communication,
     Bmp_menu_setting, 
     Bmp_menu_return
   };
@@ -243,6 +246,7 @@ void Start(){
     Bmp_txt_souji,
     Bmp_txt_asobu,
     Bmp_txt_gyarari,
+    Bmp_txt_tushin,
     Bmp_txt_settei,
     Bmp_txt_modoru
   };
@@ -347,10 +351,13 @@ bool Menu(uint8_t *timer){
       case 4: // Garally
         GarallyLauncher();
         break;
-      case 5: // Config
+      case 5: // Communication
+        CommunicationLauncher();
+        break;
+      case 6: // Config
         ConfigLauncher();
         break;
-      case 6: // Return
+      case 7: // Return
         return false;
         break;
       default: break;
@@ -528,6 +535,56 @@ bool Garally(uint8_t *timer , uint8_t *imageNo){
   return true;
 }
 void GarallyLauncher(){
+  int8_t imageNo = 0;
+  uint8_t timeOut = 255;
+  for(uint8_t i=0; i<timeOut; i++){
+    if(!Garally(&i, &imageNo)) break;
+    screen.update();
+  }
+}
+
+//............................................................
+//............................................................
+//...................... COMMUNICATION SCENE .................
+//............................................................
+//............................................................
+//............................................................
+bool Communication(uint8_t *timer , uint8_t *imageNo){
+  SceneInit();
+  // Interface
+  screen.print("/", 66, 2);
+  screen.printNumI(ComImages->TexQuant, 71, 2);
+  screen.printNumI(*imageNo+1, 59, 2);
+  selectionsText->Tx = 30;
+  selectionsText->Ty = 1;
+  selectionsText->Rend();
+  screen.print(" <  ", 2, 40);
+  screen.print("BACK", 30, 40);
+  screen.print("  > ", 58, 40);
+  // Image
+  ComImages->TexNo = *imageNo;
+  ComImages->Tx = 30;
+  ComImages->Ty = 11;
+  ComImages->Rend();
+  // Input
+  if(btnDownL){
+    mp3_play(SE_BTN_OK);
+    *imageNo += ComImages->TexQuant - 1;
+    *imageNo %= ComImages->TexQuant;
+  }
+  if(btnDownC){
+    mp3_play(SE_BTN_OK);
+    return false;
+  }
+  if(btnDownR){
+    mp3_play(SE_BTN_OK);
+    *timer = 0;
+    *imageNo += 1;
+    *imageNo %= ComImages->TexQuant;
+  }
+  return true;
+}
+void CommunicationLauncher(){
   int8_t imageNo = 0;
   uint8_t timeOut = 255;
   for(uint8_t i=0; i<timeOut; i++){

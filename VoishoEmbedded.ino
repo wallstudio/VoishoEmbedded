@@ -653,7 +653,7 @@ void Mingame0Launcher(){
     delay(10000);
     //Main
     uint8_t loveCnt = 0;
-    for(uint8_t i=300; i>=0; i--) Mingame0(i, &loveCnt);
+    for(uint8_t i=255; i>0; i--) Mingame0(i, &loveCnt);
     //Result
     screen.Clear(0x00);
     screen.print("YOUR SCORE!", 0, 10);

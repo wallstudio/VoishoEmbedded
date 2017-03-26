@@ -277,9 +277,11 @@ void Update(){
       };
       if(Life<6 && Sick==0 && Hungery<10 && Dirty==0) Life++;
       // Bad Metabolic 
-      if(Frame%(LIFE_INTERVAL*5)==0){
+      if(Frame%(LIFE_INTERVAL*3)==0){
         if(Hungery < 100)Hungery++;
         if(Dirty<2) Dirty++;
+        // AutoSave
+        Save();
       }
       // Event
       randomSeed(Frame);
@@ -328,8 +330,6 @@ void Update(){
   }
   if(btnR){
   }
-  // AutoSave
-  if(Frame%5000 == 0) Save();
 }
 
 //............................................................

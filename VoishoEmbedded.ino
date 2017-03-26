@@ -41,7 +41,8 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 //............................................................
 // GameDefine ................................................
 //............................................................
-#define MENU_SEL_CNT 8
+#define MENU_SEL_CNT  8
+#define LIFE_INTERVAL 2000
 uint8_t GameFps = 60;
 bool BufL, BufC, BufR;
 uint64_t Frame = 0;
@@ -264,6 +265,32 @@ void Start(){
 //............................................................
 //............................................................
 void Update(){
+  //Logic
+  if(Frame%LIFE_INTERVAL==0) { // Interval is about 10s.
+    if(Life == 0){
+      // Dead
+    }else{
+      // Good Metabolic 
+      if(Love<6 && Sick==0 && Hungery<10 && Dirty==0 && Life==6){
+        Love++;
+        mp3_play(SE_GYN_0);
+      };
+      if(Life<6 && Sick==0 && Hungery<10 && Dirty==0) Life++;
+      // Bad Metabolic 
+      if(Frame%(LIFE_INTERVAL*5)==0){
+        if(Hungery < 100)Hungery++;
+        if(Dirty<2) Dirty++;
+      }
+      // Event
+      randomSeed(Frame);
+      if(Hungery>10 && Dirty>1 && random(0, 500)==0) Sick = 1;
+      // Damage
+      if(Hungery==100 || Sick==1){
+        if(Life>0)Life--;
+        if(Love>0)Love--;
+      }
+    }
+  }
   SceneInit();
   // Interface
   LifeSign->TexNo = Life;
@@ -273,8 +300,8 @@ void Update(){
   screen.print("DEV ", 2, 40);
   screen.print("MENU", 30, 40);
   screen.print(" -- ", 58, 40);
-  if(Hungery) HungrySign->Rend();
-  if(Sick) SickSign->Rend();
+  if(Hungery > 10) HungrySign->Rend();
+  if(Sick > 0) SickSign->Rend();
   DirtySign->TexNo = Dirty;
   DirtySign->Rend();
   // Maki
@@ -297,9 +324,9 @@ void Update(){
     MenuLauncher();
   }
   if(btnDownR){
+    
   }
   if(btnR){
-    screen.print("CLER", 1, 32);
   }
   // AutoSave
   if(Frame%5000 == 0) Save();
@@ -440,6 +467,7 @@ void TouchLauncher(){
     if(!Touch(&i)) break;
     screen.update();
   }
+  Sick = 0;
 }
 
 //............................................................
@@ -505,7 +533,7 @@ void CleanLauncher(){
     if(!Clean(&i, timeOut)) break;
     screen.update();
   }
-  Hungery = 0;
+  Dirty = 0;
 }
 
 //............................................................

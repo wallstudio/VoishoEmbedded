@@ -8,6 +8,8 @@
 #include <DFPlayer_Mini_Mp3.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
+#include <avr/wdt.h>
+#include <avr/sleep.h>
 #include <new.h>
 #include "bitmap.h"
 #include "Game2D.h"
@@ -146,6 +148,26 @@ void BtnDetectAll(){
   BufC = btnC;
   BufR = btnR;
 }
+// Sleep
+void Sleep(){
+  digitalWrite(O0, LOW);
+  pinMode(O0, INPUT);
+  Save();
+  wdt_reset();
+  wdt_enable(WDTO_8S);  // After 1s Restart.
+  set_sleep_mode(SLEEP_MODE_STANDBY); 
+  sleep_mode(); // System go down.
+}
+void SleepCatch(){
+  BtnDetectAll();
+  if(btnL || btnC || btnR){
+    // Wake up
+    return;
+  }else{
+    Sleep();  // System go down.
+  }
+}
+// Common
 void SceneInit(){
   BtnDetectAll();
   Frame++;
@@ -173,6 +195,8 @@ void InitIO(){
   }
 }
 void setup(){
+  wdt_reset();
+  SleepCatch();
   Load();
   InitIO();
   screen.ClearInitLCD();
@@ -326,7 +350,7 @@ void Update(){
     MenuLauncher();
   }
   if(btnDownR){
-    
+    Sleep();
   }
   if(btnR){
   }

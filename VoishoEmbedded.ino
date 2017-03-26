@@ -339,6 +339,7 @@ bool Menu(uint8_t *timer){
     mp3_play(SE_BTN_OK);
     switch(selectionIcons->TexNo){
       case 0: // Touch
+        TouchLauncher();
         break;
       case 1: // Feed
         break;
@@ -390,6 +391,34 @@ void MenuLauncher(){
   uint8_t timeOut = 100;
   for(uint8_t i=0; i<timeOut; i++){
     if(!Menu(&i)) break;
+    screen.update();
+  }
+}
+
+//............................................................
+//............................................................
+//......................... TOUCH SCENE ......................
+//............................................................
+//............................................................
+//............................................................
+bool Touch(uint8_t *timer){
+  SceneInit();
+  // Maki
+  Maki->Tx = 28;
+  Maki->Ty = 10;
+  Maki->TexNo = Frame/16%2;
+  Maki->Rend();
+  //Hand
+  Hand->Tx = 30;
+  Hand->Ty = 13 + (int)(sin((float)Frame/2)*2);
+  Hand->Rend();
+  return true;
+}
+void TouchLauncher(){
+  uint8_t timeOut = 70;
+  mp3_play(SE_GYN_0);
+  for(uint8_t i=0; i<timeOut; i++){
+    if(!Touch(&i)) break;
     screen.update();
   }
 }

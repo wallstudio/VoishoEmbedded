@@ -416,6 +416,7 @@ bool Touch(uint8_t *timer){
 }
 void TouchLauncher(){
   uint8_t timeOut = 70;
+  delay(1000);
   mp3_play(SE_GYN_0);
   for(uint8_t i=0; i<timeOut; i++){
     if(!Touch(&i)) break;

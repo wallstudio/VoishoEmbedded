@@ -251,9 +251,6 @@ void Start(){
     Bmp_txt_modoru
   };
   selectionsText = new GameObject(&screen, selectionsTextTex, MENU_SEL_CNT, 0, 6, 30);
-  // Garally
-  uint8_t *garallyTex[] = {Bmp_gyun0, Bmp_gyun1};
-  GarallyImages = new GameObject(&screen, garallyTex, 2);
 }
 //............................................................
 //............................................................
@@ -284,6 +281,7 @@ void Update(){
     screen.printNumI(Frame >> 32 & 0x000000000000FFFF, 1, 16);
     screen.printNumI(Frame >> 16 & 0x000000000000FFFF, 1, 24);
     screen.printNumI(Frame >> 0  & 0x000000000000FFFF, 1, 32);
+    MemoryDebug(&screen, 50, 8);
   }
   if(btnDownC){
     mp3_play(SE_BTN_OK);
@@ -347,7 +345,22 @@ bool Menu(uint8_t *timer){
       case 2: // Clean
         break;
       case 3: // Game
-        Mingame0Launcher();
+        //Mingame0Launcher();
+        {
+          SceneInit();
+          char infoData[] = "goo.gl/eWF1m2";
+          uint8_t qrTex[21*3*2];  //126
+          GameObject* qr = new GameObject(&screen, QREncode(&screen, infoData, sizeof(infoData), qrTex), 21, 21);
+          qr->Scl = 1;
+          qr->Tx = 55;
+          qr->Ty = 10;
+          qr->Rend();
+          MemoryDebug(&screen, 0, 8);
+          screen.update();
+          delay(3000);
+          delete qr;
+        }
+        break;
       case 4: // Garally
         GarallyLauncher();
         break;
@@ -535,12 +548,17 @@ bool Garally(uint8_t *timer , uint8_t *imageNo){
   return true;
 }
 void GarallyLauncher(){
+  {
+    uint8_t *garallyTex[] = {Bmp_gyun0, Bmp_gyun1};
+    GarallyImages = new GameObject(&screen, garallyTex, 2);
+  }
   int8_t imageNo = 0;
   uint8_t timeOut = 255;
   for(uint8_t i=0; i<timeOut; i++){
     if(!Garally(&i, &imageNo)) break;
     screen.update();
   }
+  delete GarallyImages;
 }
 
 //............................................................
@@ -668,7 +686,7 @@ void Mingame0Launcher(){
     screen.print("PLZ COME", 0, 32);
     screen.print("KOETSUKI", 0, 40);
     uint8_t infoData[] = "goo.gl/eWF1m2";
-    uint8_t qrTex[21*3*2];
+    uint8_t qrTex[21*3*2];  //126
     GameObject* qr = new GameObject(&screen, QREncode(&screen, infoData, sizeof(infoData), qrTex), 21, 21);
     qr->Scl = 1;
     qr->Tx = 55;

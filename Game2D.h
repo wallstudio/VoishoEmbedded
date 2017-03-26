@@ -65,4 +65,5 @@ enum ButtonDetectMode{
 };
 bool ButtonDetect(int pin, bool *buffer, ButtonDetectMode mode);
 
+void MemoryDebug(GameLCD *screen, uint8_t x, uint8_t y);
 #endif

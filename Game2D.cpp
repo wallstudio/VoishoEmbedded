@@ -195,3 +195,14 @@ bool ButtonDetect(int pin, bool *buffer, ButtonDetectMode mode){
     }
     return rtn;
 }
+
+void MemoryDebug(GameLCD *screen, uint8_t x, uint8_t y){
+    uint8_t *h;
+    h = new uint8_t[1];
+    screen->print("HEAP", x, y);
+    screen->printNumI(h, x+3, y+8);
+    uint8_t s;
+    screen->print("STACK", x, y+16);
+    screen->printNumI(&s, x+3, y+24);
+    delete h;
+}

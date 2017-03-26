@@ -1,4 +1,4 @@
-//Locate 6572 byte.
+//Locate 6986 byte.
 extern uint8_t Bmp_hurt[];
 extern uint8_t Bmp_hurt0[];
 extern uint8_t Bmp_hurt1[];
@@ -13,6 +13,9 @@ extern uint8_t Bmp_menu_communication[];
 extern uint8_t Bmp_menu_game[];
 extern uint8_t Bmp_menu_garally[];
 extern uint8_t Bmp_menu_lasagna[];
+extern uint8_t Bmp_menu_lasagna1[];
+extern uint8_t Bmp_menu_lasagna2[];
+extern uint8_t Bmp_menu_lasagna3[];
 extern uint8_t Bmp_menu_return[];
 extern uint8_t Bmp_menu_setting[];
 extern uint8_t Bmp_menu_stroke[];

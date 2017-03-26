@@ -1,4 +1,5 @@
 #include <avr/pgmspace.h>
+#include <new.h>
 #include "Game2D.h"
 
 #define SCREEN_BUF_SYSE 504

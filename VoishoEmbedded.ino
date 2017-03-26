@@ -8,6 +8,7 @@
 #include <DFPlayer_Mini_Mp3.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
+#include <new.h>
 #include "bitmap.h"
 #include "Game2D.h"
 #include "QREncode.h"
@@ -203,6 +204,8 @@ GameObject *Hurt;
 // Menu
 GameObject *selectionIcons;
 GameObject *selectionsText;
+// Feed
+GameObject *Lasagna;
 // Garally
 GameObject *GarallyImages;
 // Communication
@@ -251,6 +254,12 @@ void Start(){
     Bmp_txt_modoru
   };
   selectionsText = new GameObject(&screen, selectionsTextTex, MENU_SEL_CNT, 0, 6, 30);
+  // Garally
+  uint8_t *garallyTex[] = {Bmp_gyun0, Bmp_gyun1};
+  GarallyImages = new GameObject(&screen, garallyTex, 2);
+  // FEED
+  uint8_t *lasagnaTex[] = {Bmp_menu_lasagna, Bmp_menu_lasagna1, Bmp_menu_lasagna2, Bmp_menu_lasagna3};
+  Lasagna = new GameObject(&screen, lasagnaTex, 4);
 }
 //............................................................
 //............................................................
@@ -342,24 +351,29 @@ bool Menu(uint8_t *timer){
         TouchLauncher();
         break;
       case 1: // Feed
+        FeedLauncher();
         break;
       case 2: // Clean
+        CleanLauncher();
         break;
       case 3: // Game
         //Mingame0Launcher();
-        {
+        {/*
           SceneInit();
+          // Interface
+          selectionsText->Tx = 30;
+          selectionsText->Ty = 1;
+          selectionsText->Rend();
           char infoData[] = "goo.gl/eWF1m2";
           uint8_t qrTex[21*3*2];  //126
-          GameObject* qr = new GameObject(&screen, QREncode(&screen, infoData, sizeof(infoData), qrTex), 21, 21);
-          qr->Scl = 1;
-          qr->Tx = 55;
-          qr->Ty = 10;
-          qr->Rend();
+          GameObject qr = GameObject(&screen, QREncode(&screen, infoData, sizeof(infoData), qrTex), 21, 21);
+          qr.Scl = 1;
+          qr.Tx = 55;
+          qr.Ty = 10;
+          qr.Rend();
           MemoryDebug(&screen, 0, 8);
           screen.update();
-          delay(3000);
-          delete qr;
+          delay(3000);*/
         }
         break;
       case 4: // Garally
@@ -403,14 +417,18 @@ void MenuLauncher(){
 //............................................................
 bool Touch(uint8_t *timer){
   SceneInit();
+  // Interface
+  selectionsText->Tx = 30;
+  selectionsText->Ty = 1;
+  selectionsText->Rend();
   // Maki
   Maki->Tx = 28;
   Maki->Ty = 10;
-  Maki->TexNo = Frame/16%2;
+  Maki->TexNo = *timer/16%2;
   Maki->Rend();
   //Hand
   Hand->Tx = 30;
-  Hand->Ty = 13 + (int)(sin((float)Frame/2)*2);
+  Hand->Ty = 13 + (int)(sin((float)*timer/2)*2);
   Hand->Rend();
   return true;
 }
@@ -422,6 +440,72 @@ void TouchLauncher(){
     if(!Touch(&i)) break;
     screen.update();
   }
+}
+
+//............................................................
+//............................................................
+//......................... FEED SCENE .......................
+//............................................................
+//............................................................
+//............................................................
+bool Feed(uint8_t *timer, uint8_t timeLength){
+  SceneInit();
+  // Interface
+  selectionsText->Tx = 30;
+  selectionsText->Ty = 1;
+  selectionsText->Rend();
+  // Maki
+  Maki->Tx = 34;
+  Maki->Ty = 10;
+  Maki->TexNo = Frame/16%2;
+  Maki->Rend();
+  // Food
+  Lasagna->TexNo = *timer/(timeLength/(Lasagna->TexQuant-1));
+  Lasagna->Tx = 20;
+  Lasagna->Ty = 20;
+  Lasagna->Rend();
+  return true;
+}
+void FeedLauncher(){
+  uint8_t timeOut = 70;
+  delay(1000);
+  mp3_play(SE_GYN_0);
+  for(uint8_t i=0; i<timeOut; i++){
+    if(!Feed(&i, timeOut)) break;
+    screen.update();
+  }
+  Hungery = 0;
+}
+
+//............................................................
+//............................................................
+//......................... CLEAN SCENE ......................
+//............................................................
+//............................................................
+//............................................................
+bool Clean(uint8_t *timer, uint8_t timeLength){
+  SceneInit();
+  // Interface
+  selectionsText->Tx = 30;
+  selectionsText->Ty = 1;
+  selectionsText->Rend();
+  // Tool
+  selectionIcons->Tx = *timer*84/timeLength;
+  selectionIcons->Ty = 20;
+  selectionIcons->Rend();
+  // Dirt
+  DirtySign->TexNo = 2-(*timer+15)/(timeLength/(3-1));
+  DirtySign->Rend();
+  return true;
+}
+void CleanLauncher(){
+  uint8_t timeOut = 70;
+  delay(1000);
+  for(uint8_t i=0; i<timeOut; i++){
+    if(!Clean(&i, timeOut)) break;
+    screen.update();
+  }
+  Hungery = 0;
 }
 
 //............................................................
@@ -578,17 +662,12 @@ bool Garally(uint8_t *timer , uint8_t *imageNo){
   return true;
 }
 void GarallyLauncher(){
-  {
-    uint8_t *garallyTex[] = {Bmp_gyun0, Bmp_gyun1};
-    GarallyImages = new GameObject(&screen, garallyTex, 2);
-  }
   int8_t imageNo = 0;
   uint8_t timeOut = 255;
   for(uint8_t i=0; i<timeOut; i++){
     if(!Garally(&i, &imageNo)) break;
     screen.update();
   }
-  delete GarallyImages;
 }
 
 //............................................................

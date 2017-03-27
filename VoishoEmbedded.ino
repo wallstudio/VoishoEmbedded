@@ -33,6 +33,7 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 #define SE_BTN_NG   2
 #define SE_GYN_0    3
 #define SE_MUSIC_0  4
+#define SE_DEAD     5
 //............................................................
 // I/O .......................................................
 //............................................................
@@ -230,7 +231,12 @@ void SceneInit(){
   Frame++;
   screen.Clear(0x00);
 }
+bool Dead = false;
 bool LifeCycle(){
+  if(!Dead && Life==0) {
+    mp3_play(SE_DEAD);
+    Dead = true;
+  }
   if((uint16_t)Frame-PreFrame > LIFE_INTERVAL) { // Interval is about 10s.
     if(Life == 0){
       // Dead
@@ -266,6 +272,7 @@ bool LifeCycle(){
       // AutoSleep
       //randomSeed(Frame%1000 + analogRead(5)%94);
       //if(random(0, 20)==0) Sleep();
+      Save();
     }
     PreFrame = (uint16_t)Frame;
     return true;
@@ -416,13 +423,13 @@ void Update(){
   LoveSign->TexNo = Love;
   LoveSign->Rend();
   if(Life>0){
-    screen.print(" -- ", 2, 40);
-    screen.print("MENU", 25, 40);
-    screen.print("SLEEP", 52, 40);
+    screen.print("SAVE", 0, 40);
+    screen.print("MENU", 27, 40);
+    screen.print("SLEEP", 54, 40);
   }else{
-    screen.print(" -- ", 2, 40);
-    screen.print("RESET", 20, 40);
-    screen.print("SLEEP", 52, 40);
+    screen.print("-- ", 2, 40);
+    screen.print("RESET", 22, 40);
+    screen.print("SLEEP", 54, 40);
   }
   if(Hungery > 10) HungrySign->Rend();
   if(Sick > 0) SickSign->Rend();
@@ -432,6 +439,7 @@ void Update(){
   Maki->Ty = 10;
   Maki->Tx = (int)(sin((float)Frame/8)*2+screen.Width/2-Maki->GetWidth()/2);
   Maki->TexNo = Frame/16%2 + Rank*6;
+  if(Dirty>0 || Hungery>10 || Sick>0) Maki->TexNo += 4;
   if(Life<=0){
     Maki->Tx = screen.Width/2-Maki->GetWidth()/2;
     Maki->TexNo = 18;
@@ -439,9 +447,16 @@ void Update(){
   Maki->Rend();
   // Input
   if(btnDownL){
+    if(Life>0){
+      mp3_play(SE_BTN_OK);
+      Save();
+      screen.Clear(0x00);
+      screen.print("*SAVING*", 18, 19);
+      screen.update();
+      delay(500);
+    }
   }
   if(btnL){
-    mp3_play(SE_BTN_OK);
     screen.printNumI(Frame >> 48 & 0x000000000000FFFF, 1, 8);
     screen.printNumI(Frame >> 32 & 0x000000000000FFFF, 1, 16);
     screen.printNumI(Frame >> 16 & 0x000000000000FFFF, 1, 24);
@@ -496,6 +511,7 @@ bool Menu(uint8_t *timer){
   Maki->Ty = 10;
   Maki->Tx = (int)(sin((float)Frame/8)*2+screen.Width/2-Maki->GetWidth()/2)+24;
   Maki->TexNo = Frame/16%2 +Rank*6;
+  if(Dirty>0 || Hungery>10 || Sick>0) Maki->TexNo += 4;
   Maki->Rend();
   // Input
   if(btnDownL){
@@ -586,7 +602,7 @@ bool Touch(uint8_t *timer){
   // Maki
   Maki->Tx = 28;
   Maki->Ty = 10;
-  Maki->TexNo = *timer/16%2 + 6*Rank;
+  Maki->TexNo = *timer/16%2 + 6*Rank + 2;
   Maki->Rend();
   //Hand
   Hand->Tx = 30;
@@ -620,7 +636,7 @@ bool Feed(uint8_t *timer, uint8_t timeLength){
   // Maki
   Maki->Tx = 34;
   Maki->Ty = 10;
-  Maki->TexNo = Frame/16%2 + 6*Rank;
+  Maki->TexNo = Frame/16%2 + 6*Rank + 2;
   Maki->Rend();
   // Food
   Lasagna->TexNo = *timer/(timeLength/(Lasagna->TexQuant-1));

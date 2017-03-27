@@ -192,14 +192,14 @@ void SleepCatch(){
         };
         if(Life<6 && Sick==0 && Hungery<10 && Dirty==0) Life++;
         // Bad Metabolic 
-        randomSeed(Frame%2000);
+        randomSeed(Frame%2000 + analogRead(5)%164);
         if(random(0, 3)==0){
           if(Hungery < 100)Hungery++;
           if(Dirty<2) Dirty++;
           //DebugLEDFlash(4, 150);
         }
         // Event
-        randomSeed(Frame);
+        randomSeed(Frame + analogRead(5)%81);
         if(Hungery>10 && Dirty>1 && random(0, 3)==0){
           Sick = 1; 
           //DebugLEDFlash(4, 150);
@@ -236,7 +236,7 @@ bool LifeCycle(){
       // Dead
     }else{
       // Advance
-      randomSeed(Frame%5);
+      randomSeed(Frame%5 + analogRead(5)%211);
       if(Rank<2 &&Love==6 && Sick==0 && Hungery<10 && Dirty==0 && Life>3 && random(0, 3)==0){
         Rank++;
         Love = 0;
@@ -248,7 +248,7 @@ bool LifeCycle(){
       };
       if(Life<6 && Sick==0 && Hungery<10 && Dirty==0) Life++;
       // Bad Metabolic 
-      randomSeed(Frame%11);
+      randomSeed(Frame%11 + analogRead(5)%74);
       if(random(0, 3)==0){
         if(Hungery < 100)Hungery++;
         if(Dirty<2) Dirty++;
@@ -256,7 +256,7 @@ bool LifeCycle(){
         //Save();
       }
       // Event
-      randomSeed(Frame%9);
+      randomSeed(Frame%9 + analogRead(5)%69);
       if(Hungery>10 && Dirty>1 && random(0, 3)==0) Sick = 1;
       // Damage
       if(Hungery==100 || Sick==1){
@@ -264,7 +264,7 @@ bool LifeCycle(){
         if(Love>0)Love--;
       }
       // AutoSleep
-      //randomSeed(Frame%1000);
+      //randomSeed(Frame%1000 + analogRead(5)%94);
       //if(random(0, 20)==0) Sleep();
     }
     PreFrame = (uint16_t)Frame;
@@ -448,6 +448,7 @@ void Update(){
     screen.printNumI(Frame >> 0  & 0x000000000000FFFF, 1, 32);
     screen.printNumI(Hungery, 27, 8);
     screen.printNumI(PreFrame, 27, 16);
+    screen.printNumI(analogRead(5), 27, 24);
     MemoryDebug(&screen, 50, 8);
   }
   if(btnDownC){

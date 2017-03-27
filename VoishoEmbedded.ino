@@ -45,7 +45,7 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 // GameDefine ................................................
 //............................................................
 #define MENU_SEL_CNT  8
-#define LIFE_INTERVAL 100
+#define LIFE_INTERVAL 2000
 uint8_t GameFps = 60;
 bool BufL, BufC, BufR;
 uint64_t Frame = 0;
@@ -338,7 +338,7 @@ GameObject *selectionsText;
 // Feed
 GameObject *Lasagna;
 // Communication
-GameObject *ComImages;
+GameObject *ComInstruntion;
 //............................................................
 //............................................................
 void Start(){
@@ -410,6 +410,9 @@ void Start(){
   // FEED
   uint8_t *lasagnaTex[] = {Bmp_menu_lasagna, Bmp_menu_lasagna1, Bmp_menu_lasagna2, Bmp_menu_lasagna3};
   Lasagna = new GameObject(&screen, lasagnaTex, 4);
+  // Communication
+  uint8_t *comInsTex[] = {Bmp_qr_inst};
+  ComInstruntion = new GameObject(&screen, comInsTex, 1, 0, 0, 10);
 }
 //............................................................
 //............................................................
@@ -846,47 +849,50 @@ void GarallyLauncher(){
 //............................................................
 //............................................................
 //............................................................
-bool Communication(uint8_t *timer , uint8_t *imageNo){
+void CommunicationLauncher(){
+  Save();
   SceneInit();
+  // QR
+  uint8_t infoData[17] = "YM-";
+  {
+    uint8_t i = 3;
+    for(; i<8; i++){
+      infoData[i] = Frame >> (8*i) & 0x000000000000FF;
+    }
+    infoData[i++] = Life;
+    infoData[i++] = Love;
+    infoData[i++] = Hungery;
+    infoData[i++] = Sick;
+    infoData[i++] = Dirty;
+    infoData[i++] = Rank;
+  }
+  DirectQREncode(&screen, infoData, sizeof(infoData), 62, 13);
   // Interface
-  screen.print("/", 66, 2);
-  screen.printNumI(ComImages->TexQuant, 71, 2);
-  screen.printNumI(*imageNo+1, 59, 2);
   selectionsText->Tx = 30;
   selectionsText->Ty = 1;
   selectionsText->Rend();
-  screen.print(" <  ", 2, 40);
+  screen.print(" -- ", 2, 40);
   screen.print("BACK", 30, 40);
-  screen.print("  > ", 58, 40);
-  // Image
-  ComImages->TexNo = *imageNo;
-  ComImages->Tx = 30;
-  ComImages->Ty = 11;
-  ComImages->Rend();
+  screen.print(" -- ", 58, 40);
+  //ComInstruntion->TexNo = 0;
+  ComInstruntion->Rend();
+  screen.update();
   // Input
-  if(btnDownL){
-    mp3_play(SE_BTN_OK);
-    *imageNo += ComImages->TexQuant - 1;
-    *imageNo %= ComImages->TexQuant;
-  }
-  if(btnDownC){
-    mp3_play(SE_BTN_OK);
-    return false;
-  }
-  if(btnDownR){
-    mp3_play(SE_BTN_OK);
-    *timer = 0;
-    *imageNo += 1;
-    *imageNo %= ComImages->TexQuant;
-  }
-  return true;
-}
-void CommunicationLauncher(){
-  int8_t imageNo = 0;
-  uint8_t timeOut = 255;
+  uint16_t timeOut = 1000;
   for(uint8_t i=0; i<timeOut; i++){
-    if(!Garally(&i, &imageNo)) break;
-    screen.update();
+    BtnDetectAll();
+    if(btnDownL){
+      mp3_play(SE_BTN_OK);
+      i = 0;
+    }
+    if(btnDownC){
+      mp3_play(SE_BTN_OK);
+      break;
+    }
+    if(btnDownR){
+      mp3_play(SE_BTN_OK);
+      i = 0;
+    }
   }
 }
 

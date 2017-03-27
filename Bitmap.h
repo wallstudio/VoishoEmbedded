@@ -1,4 +1,4 @@
-//Locate 10658 byte.
+//Locate 11138 byte.
 extern uint8_t Bmp_arrow_left[];
 extern uint8_t Bmp_arrow_right[];
 extern uint8_t Bmp_dirt[];
@@ -56,6 +56,7 @@ extern uint8_t Bmp_plus6[];
 extern uint8_t Bmp_poison[];
 extern uint8_t Bmp_qr_abc[];
 extern uint8_t Bmp_qr_abc_unmask[];
+extern uint8_t Bmp_qr_inst[];
 extern uint8_t Bmp_txt_asobu[];
 extern uint8_t Bmp_txt_gohan[];
 extern uint8_t Bmp_txt_gyarari[];

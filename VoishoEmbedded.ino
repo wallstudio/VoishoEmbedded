@@ -176,19 +176,19 @@ void DebugLEDFlash(uint8_t count, uint8_t length){
     }
 }
 void SleepCatch(){
-  DebugLEDFlash(1, 100);
+  //DebugLEDFlash(1, 100);
   Load();
   Frame += 160;
-  {
+  if(Life>0){
     if((uint16_t)Frame-PreFrame > LIFE_INTERVAL) { // Interval is about 10s.
-      DebugLEDFlash(8, 50);
+      //DebugLEDFlash(8, 50);
       if(Life == 0){
         // Dead
       }else{
         // Good Metabolic 
         if(Love<6 && Sick==0 && Hungery<10 && Dirty==0 && Life==6){
           Love++;
-          DebugLEDFlash(4, 150);
+          //DebugLEDFlash(4, 150);
         };
         if(Life<6 && Sick==0 && Hungery<10 && Dirty==0) Life++;
         // Bad Metabolic 
@@ -196,19 +196,19 @@ void SleepCatch(){
         if(random(0, 3)==0){
           if(Hungery < 100)Hungery++;
           if(Dirty<2) Dirty++;
-          DebugLEDFlash(4, 150);
+          //DebugLEDFlash(4, 150);
         }
         // Event
         randomSeed(Frame);
         if(Hungery>10 && Dirty>1 && random(0, 3)==0){
           Sick = 1; 
-          DebugLEDFlash(4, 150);
+          //DebugLEDFlash(4, 150);
         }
         // Damage
         if(Hungery==100 || Sick==1){
           if(Life>0)Life--;
           if(Love>0)Love--;
-          DebugLEDFlash(4, 150);
+          //DebugLEDFlash(4, 150);
         }
       }
       PreFrame = (uint16_t)Frame;
@@ -415,9 +415,15 @@ void Update(){
   LifeSign->Rend();
   LoveSign->TexNo = Love;
   LoveSign->Rend();
-  screen.print("DEVE", 2, 40);
-  screen.print("MENU", 30, 40);
-  screen.print("SLEP", 58, 40);
+  if(Life>0){
+    screen.print(" -- ", 2, 40);
+    screen.print("MENU", 25, 40);
+    screen.print("SLEEP", 52, 40);
+  }else{
+    screen.print(" -- ", 2, 40);
+    screen.print("RESET", 20, 40);
+    screen.print("SLEEP", 52, 40);
+  }
   if(Hungery > 10) HungrySign->Rend();
   if(Sick > 0) SickSign->Rend();
   DirtySign->TexNo = Dirty;
@@ -446,7 +452,11 @@ void Update(){
   }
   if(btnDownC){
     mp3_play(SE_BTN_OK);
-    MenuLauncher();
+    if(Life>0){
+      MenuLauncher();
+    }else{
+      Clear();
+    }
   }
   if(btnDownR){
     mp3_play(SE_BTN_OK);

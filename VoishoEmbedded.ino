@@ -538,14 +538,7 @@ bool Menu(uint8_t *timer){
         CleanLauncher();
         break;
       case 3: // Game
-        //Mingame0Launcher();
-        {
-          SceneInit();
-          uint8_t infoData[] = "goo.gl/eWF1m2";
-          DirectQREncode(&screen, infoData, sizeof(infoData), 0, 0);
-          screen.update();
-          delay(30000);
-        }
+        GameLauncher();
         break;
       case 4: // Garally
         GarallyLauncher();
@@ -874,9 +867,10 @@ void CommunicationLauncher(){
   screen.print(" -- ", 2, 40);
   screen.print("BACK", 30, 40);
   screen.print(" -- ", 58, 40);
-  //ComInstruntion->TexNo = 0;
+  ComInstruntion->TexNo = 0;
   ComInstruntion->Rend();
   screen.update();
+  delay(2000);
   // Input
   uint16_t timeOut = 1000;
   for(uint8_t i=0; i<timeOut; i++){
@@ -980,6 +974,125 @@ void Mingame0Launcher(){
     screen.update();
     delay(30000);
     delete qr;
+}
+
+//............................................................
+//............................................................
+//........................ GAME SCENE ........................
+//............................................................
+//............................................................
+//............................................................
+void Game(uint8_t countDown, uint8_t* loveCnt){
+  SceneInit();
+  //Information
+  screen.print("TIME", 1, 1);
+  screen.printNumI(countDown, 50, 1);
+  screen.print("SCORE", 1, 40);
+  screen.printNumI(*loveCnt, 50, 40);
+  //Interface
+  //Maki
+    // <-----------84-------------->
+    // <--------59---------><--27-->
+    // <-20--><--20-><--19->
+  Maki->Ty = 10;
+  Maki->Tx = (int)(sin((float)(300-countDown+(random(countDown/40)*3))/8)*16+screen.Width/2-Maki->GetWidth()/2);
+  Maki->TexNo = Frame/16%2;
+  Maki->Rend();
+  Hurt->Tx = Maki->Tx -5;
+  Hurt->Ty = Maki->Ty;
+  //Hand
+  if(btnL){
+    Hand->Tx = 10;
+    Hand->Ty = 13 + (int)(sin((float)Frame/2)*2);
+    Hand->Rend();
+    if(Maki->Tx<20) Hurt->Rend();
+  }else if(btnC){
+    Hand->Tx = 30;
+    Hand->Ty = 13 + (int)(sin((float)Frame/2)*2);
+    Hand->Rend();
+    if(Maki->Tx>=20 && Maki->Tx<40) Hurt->Rend();
+  }else if(btnR){
+    Hand->Tx = 50;
+    Hand->Ty = 13 + (int)(sin((float)Frame/2)*2);
+    Hand->Rend();
+    if(Maki->Tx>=40) Hurt->Rend();
+  }
+  //HitCheck
+  if((btnDownL && Maki->Tx<20) || (btnDownC && Maki->Tx>=20 && Maki->Tx<40) || (btnDownR && Maki->Tx>=40)) {
+      (*loveCnt)++;
+      mp3_play(1);
+  } else if(btnDownL || btnDownC || btnDownR){
+      // fail effect
+  }
+  screen.update();
+}
+void GameLauncher(){
+  {
+    SceneInit();
+    // Interface
+    selectionsText->Tx = 30;
+    selectionsText->Ty = 1;
+    selectionsText->Rend();
+    screen.print(" -- ", 2, 40);
+    screen.print(" OK ", 30, 40);
+    screen.print(" -- ", 58, 40);
+    //ComInstruntion->TexNo = 1;
+    ComInstruntion->Rend();
+    screen.update();
+    delay(2000);
+    // Input
+    uint16_t timeOut = 1000;
+    for(uint8_t i=0; i<timeOut; i++){
+      BtnDetectAll();
+      if(btnDownL){
+        mp3_play(SE_BTN_OK);
+        i = 0;
+      }
+      if(btnDownC){
+        mp3_play(SE_BTN_OK);
+        break;
+      }
+      if(btnDownR){
+        mp3_play(SE_BTN_OK);
+        i = 0;
+      }
+    }
+  }
+  //Main
+  uint8_t loveCnt = 0;
+  for(uint8_t i=255; i>0; i--) Mingame0(i, &loveCnt);
+  {
+    SceneInit();
+    // Interface
+    selectionsText->Tx = 30;
+    selectionsText->Ty = 1;
+    selectionsText->Rend();
+    screen.print(" -- ", 2, 40);
+    screen.print(" OK ", 30, 40);
+    screen.print(" -- ", 58, 40);
+    //Result
+    screen.print("YOUR SCORE!", 0, 16);
+    screen.printNumI(loveCnt, 35, 26);
+    screen.update();
+    delay(2000);
+    // Input
+    uint16_t timeOut = 1000;
+    for(uint8_t i=0; i<timeOut; i++){
+      BtnDetectAll();
+      if(btnDownL){
+        mp3_play(SE_BTN_OK);
+        i = 0;
+      }
+      if(btnDownC){
+        mp3_play(SE_BTN_OK);
+        break;
+      }
+      if(btnDownR){
+        mp3_play(SE_BTN_OK);
+        i = 0;
+      }
+    }
+  }
 }
 //............................................................
 //............................................................

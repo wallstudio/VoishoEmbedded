@@ -44,7 +44,7 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 // GameDefine ................................................
 //............................................................
 #define MENU_SEL_CNT  8
-#define LIFE_INTERVAL 2000
+#define LIFE_INTERVAL 100
 uint8_t GameFps = 60;
 bool BufL, BufC, BufR;
 uint64_t Frame = 0;
@@ -55,6 +55,7 @@ uint8_t Love = 0;
 uint8_t Hungery = 0;
 uint8_t Sick = 0;
 uint8_t Dirty = 0;
+uint8_t Rank = 0;
 // Config
 uint8_t Volume = VOLUME;
 uint8_t Luminance = 4;
@@ -86,6 +87,7 @@ void Save(){
   EEPROM.write(i++, PreFrame>>8);
   EEPROM.write(i++, PreFrame&0x00FF);
   screen.Clear(0x00);
+  EEPROM.write(i++, Rank);
   screen.print("SAVEDATA", 18, 16);
   screen.print(" SAVING ", 18, 24);
   screen.update();
@@ -120,6 +122,7 @@ void Load(){
   SleepTimeOut = EEPROM.read(i++);
   PreFrame = EEPROM.read(i++) * 0x100;
   PreFrame += EEPROM.read(i++);  
+  Rank = EEPROM.read(i++);
   screen.Clear(0x00);
   screen.print("SAVEDATA", 18, 16);
   screen.print("LOADING", 18, 24);
@@ -197,7 +200,7 @@ void SleepCatch(){
         }
         // Event
         randomSeed(Frame);
-        if(Hungery>10 && Dirty>1 && random(0, 500)==0){
+        if(Hungery>10 && Dirty>1 && random(0, 3)==0){
           Sick = 1; 
           DebugLEDFlash(4, 150);
         }
@@ -232,6 +235,12 @@ bool LifeCycle(){
     if(Life == 0){
       // Dead
     }else{
+      // Advance
+      randomSeed(Frame%5);
+      if(Rank<2 &&Love==6 && Sick==0 && Hungery<10 && Dirty==0 && Life>3 && random(0, 3)==0){
+        Rank++;
+        Love = 0;
+      }
       // Good Metabolic 
       if(Love<6 && Sick==0 && Hungery<10 && Dirty==0 && Life==6){
         Love++;
@@ -239,7 +248,7 @@ bool LifeCycle(){
       };
       if(Life<6 && Sick==0 && Hungery<10 && Dirty==0) Life++;
       // Bad Metabolic 
-      randomSeed(Frame%2000);
+      randomSeed(Frame%11);
       if(random(0, 3)==0){
         if(Hungery < 100)Hungery++;
         if(Dirty<2) Dirty++;
@@ -247,15 +256,15 @@ bool LifeCycle(){
         //Save();
       }
       // Event
-      randomSeed(Frame);
-      if(Hungery>10 && Dirty>1 && random(0, 500)==0) Sick = 1;
+      randomSeed(Frame%9);
+      if(Hungery>10 && Dirty>1 && random(0, 3)==0) Sick = 1;
       // Damage
       if(Hungery==100 || Sick==1){
         if(Life>0)Life--;
         if(Love>0)Love--;
       }
       // AutoSleep
-      randomSeed(Frame%1000);
+      //randomSeed(Frame%1000);
       //if(random(0, 20)==0) Sleep();
     }
     PreFrame = (uint16_t)Frame;
@@ -321,8 +330,6 @@ GameObject *selectionIcons;
 GameObject *selectionsText;
 // Feed
 GameObject *Lasagna;
-// Garally
-GameObject *GarallyImages;
 // Communication
 GameObject *ComImages;
 //............................................................
@@ -340,8 +347,32 @@ void Start(){
   uint8_t *dirtyTex[] = {Bmp_dirt0, Bmp_dirt1, Bmp_dirt2};
   DirtySign = new GameObject(&screen, dirtyTex, 3, 2, 5, 30);
   // Charactor
-  uint8_t *makiTex[] = {Bmp_gyun0, Bmp_gyun1};
-  Maki = new GameObject(&screen, makiTex, 2);
+  uint8_t *makiTex[] = {
+    // Egg
+    Bmp_gyun0_nml_egg, 
+    Bmp_gyun1_nml_egg,
+    Bmp_gyun0_egg, 
+    Bmp_gyun1_egg,
+    Bmp_gyun0_bad_egg, 
+    Bmp_gyun1_bad_egg,
+    // Baby
+    Bmp_gyun0_nml_baby, 
+    Bmp_gyun1_nml_baby,
+    Bmp_gyun0_baby, 
+    Bmp_gyun1_baby,
+    Bmp_gyun0_bad_baby, 
+    Bmp_gyun1_bad_baby,
+    // Adult
+    Bmp_gyun0_nml, 
+    Bmp_gyun1_nml,
+    Bmp_gyun0, 
+    Bmp_gyun1,
+    Bmp_gyun0_bad, 
+    Bmp_gyun1_bad,
+    // Dead
+    Bmp_gyun_tumb
+  };
+  Maki = new GameObject(&screen, makiTex, 19);
   uint8_t *handTex[] = {Bmp_hand};
   Hand = new GameObject(&screen, handTex, 1);
   uint8_t *hurtTex[] = {Bmp_hurt};
@@ -369,9 +400,6 @@ void Start(){
     Bmp_txt_modoru
   };
   selectionsText = new GameObject(&screen, selectionsTextTex, MENU_SEL_CNT, 0, 6, 30);
-  // Garally
-  uint8_t *garallyTex[] = {Bmp_gyun0, Bmp_gyun1};
-  GarallyImages = new GameObject(&screen, garallyTex, 2);
   // FEED
   uint8_t *lasagnaTex[] = {Bmp_menu_lasagna, Bmp_menu_lasagna1, Bmp_menu_lasagna2, Bmp_menu_lasagna3};
   Lasagna = new GameObject(&screen, lasagnaTex, 4);
@@ -387,9 +415,9 @@ void Update(){
   LifeSign->Rend();
   LoveSign->TexNo = Love;
   LoveSign->Rend();
-  screen.print("DEV ", 2, 40);
+  screen.print("DEVE", 2, 40);
   screen.print("MENU", 30, 40);
-  screen.print(" -- ", 58, 40);
+  screen.print("SLEP", 58, 40);
   if(Hungery > 10) HungrySign->Rend();
   if(Sick > 0) SickSign->Rend();
   DirtySign->TexNo = Dirty;
@@ -397,16 +425,23 @@ void Update(){
   // Maki
   Maki->Ty = 10;
   Maki->Tx = (int)(sin((float)Frame/8)*2+screen.Width/2-Maki->GetWidth()/2);
-  Maki->TexNo = Frame/16%2;
+  Maki->TexNo = Frame/16%2 + Rank*6;
+  if(Life<=0){
+    Maki->Tx = screen.Width/2-Maki->GetWidth()/2;
+    Maki->TexNo = 18;
+  };
   Maki->Rend();
   // Input
   if(btnDownL){
   }
   if(btnL){
+    mp3_play(SE_BTN_OK);
     screen.printNumI(Frame >> 48 & 0x000000000000FFFF, 1, 8);
     screen.printNumI(Frame >> 32 & 0x000000000000FFFF, 1, 16);
     screen.printNumI(Frame >> 16 & 0x000000000000FFFF, 1, 24);
     screen.printNumI(Frame >> 0  & 0x000000000000FFFF, 1, 32);
+    screen.printNumI(Hungery, 27, 8);
+    screen.printNumI(PreFrame, 27, 16);
     MemoryDebug(&screen, 50, 8);
   }
   if(btnDownC){
@@ -414,6 +449,7 @@ void Update(){
     MenuLauncher();
   }
   if(btnDownR){
+    mp3_play(SE_BTN_OK);
     Sleep();
   }
   if(btnR){
@@ -448,7 +484,7 @@ bool Menu(uint8_t *timer){
   // Maki
   Maki->Ty = 10;
   Maki->Tx = (int)(sin((float)Frame/8)*2+screen.Width/2-Maki->GetWidth()/2)+24;
-  Maki->TexNo = Frame/16%2;
+  Maki->TexNo = Frame/16%2 +Rank*6;
   Maki->Rend();
   // Input
   if(btnDownL){
@@ -539,7 +575,7 @@ bool Touch(uint8_t *timer){
   // Maki
   Maki->Tx = 28;
   Maki->Ty = 10;
-  Maki->TexNo = *timer/16%2;
+  Maki->TexNo = *timer/16%2 + 6*Rank;
   Maki->Rend();
   //Hand
   Hand->Tx = 30;
@@ -573,7 +609,7 @@ bool Feed(uint8_t *timer, uint8_t timeLength){
   // Maki
   Maki->Tx = 34;
   Maki->Ty = 10;
-  Maki->TexNo = Frame/16%2;
+  Maki->TexNo = Frame/16%2 + 6*Rank;
   Maki->Rend();
   // Food
   Lasagna->TexNo = *timer/(timeLength/(Lasagna->TexQuant-1));
@@ -747,7 +783,7 @@ bool Garally(uint8_t *timer , uint8_t *imageNo){
   SceneInit();
   // Interface
   screen.print("/", 66, 2);
-  screen.printNumI(GarallyImages->TexQuant, 71, 2);
+  screen.printNumI(Maki->TexQuant, 71, 2);
   screen.printNumI(*imageNo+1, 59, 2);
   selectionsText->Tx = 30;
   selectionsText->Ty = 1;
@@ -756,15 +792,15 @@ bool Garally(uint8_t *timer , uint8_t *imageNo){
   screen.print("BACK", 30, 40);
   screen.print("  > ", 58, 40);
   // Image
-  GarallyImages->TexNo = *imageNo;
-  GarallyImages->Tx = 30;
-  GarallyImages->Ty = 11;
-  GarallyImages->Rend();
+  Maki->TexNo = *imageNo;
+  Maki->Tx = 30;
+  Maki->Ty = 11;
+  Maki->Rend();
   // Input
   if(btnDownL){
     mp3_play(SE_BTN_OK);
-    *imageNo += GarallyImages->TexQuant - 1;
-    *imageNo %= GarallyImages->TexQuant;
+    *imageNo += Maki->TexQuant - 1;
+    *imageNo %= Maki->TexQuant;
   }
   if(btnDownC){
     mp3_play(SE_BTN_OK);
@@ -774,7 +810,7 @@ bool Garally(uint8_t *timer , uint8_t *imageNo){
     mp3_play(SE_BTN_OK);
     *timer = 0;
     *imageNo += 1;
-    *imageNo %= GarallyImages->TexQuant;
+    *imageNo %= Maki->TexQuant;
   }
   return true;
 }

@@ -536,22 +536,12 @@ bool Menu(uint8_t *timer){
         break;
       case 3: // Game
         //Mingame0Launcher();
-        {/*
+        {
           SceneInit();
-          // Interface
-          selectionsText->Tx = 30;
-          selectionsText->Ty = 1;
-          selectionsText->Rend();
-          char infoData[] = "goo.gl/eWF1m2";
-          uint8_t qrTex[21*3*2];  //126
-          GameObject qr = GameObject(&screen, QREncode(&screen, infoData, sizeof(infoData), qrTex), 21, 21);
-          qr.Scl = 1;
-          qr.Tx = 55;
-          qr.Ty = 10;
-          qr.Rend();
-          MemoryDebug(&screen, 0, 8);
+          uint8_t infoData[] = "goo.gl/eWF1m2";
+          DirectQREncode(&screen, infoData, sizeof(infoData), 0, 0);
           screen.update();
-          delay(3000);*/
+          delay(30000);
         }
         break;
       case 4: // Garally

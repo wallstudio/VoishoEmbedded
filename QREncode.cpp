@@ -1,4 +1,5 @@
 #include <avr/pgmspace.h>
+#include <EEPROM.h>
 #include "QREncode.h"
 #include "Game2D.h"
 #define QR_BMP_SIZE 63
@@ -325,4 +326,288 @@ void WritePatternPixel(uint8_t* dest, uint16_t x, uint16_t y, uint8_t col, uint8
         //white
         dest[by] &= ~(1<<bi);
     }
+}
+
+//........................................................................
+//........................................................................
+//........................................................................
+//................................USE EEPROM .............................
+//........................................................................
+//........................................................................
+
+void DirectQREncode(GameLCD *screen, uint8_t* infoData, uint8_t infoLength, uint8_t tx, uint8_t ty){
+    if(infoLength > MAX_INFO) return; // Exception
+
+    uint8_t buf[QR_DATA + QR_EC];   // + 26 Byte : QR_DATA + QR_EC
+    for(int i=0; i<QR_DATA + QR_EC; i++){
+        buf[i] = 0x00;
+    }
+    //............................................
+    // Step 0
+    // Mode config
+    //............................................
+    buf[0] |= MODE_SING << 4;      // Binary Mode
+    buf[0] |= infoLength >> 4;  // Count before
+    buf[1] |= infoLength << 4;  // Count after
+
+    //............................................
+    // Step 1
+    // Plain encode
+    //............................................
+    {
+        int i;
+        for(i=2; i<infoLength + 2; i++){
+            buf[i-1] |= infoData[i-2] >> 4;
+            buf[i] |= infoData[i-2] << 4;
+        }
+        while(i < QR_DATA){
+            buf[i++] = PADDING_1;
+            if(i >= QR_DATA) break;
+            buf[i++] = PADDING_2;
+        }
+    }
+
+    //............................................
+    // Step 2
+    // RS encode
+    //............................................
+    uint8_t gp[] = {0, 87, 229, 146, 149, 238, 102, 21};    // + 8 Byte : QR_EC+1
+    uint8_t ip[QR_DATA+QR_EC];                                    // + 26 Byte : QR_EC+QR_DATA
+    //Copy
+    for(int i=0; i<QR_DATA; i++){
+        ip[i] = buf[i];
+    }
+    for(int i=QR_DATA; i<QR_DATA+QR_EC; i++){
+        ip[i] = 0;
+    }
+    // Divid
+    for(int i=0; i<QR_DATA; i++){
+        // Tune and convert genePoly
+        if(ip[i]==0) continue;
+        uint8_t scale = pgm_read_byte(InvGalois28Table + ip[i]);
+
+        uint8_t gpcp[QR_EC+1];
+        for(int j=0; j<QR_EC+1; j++){
+            gpcp[j] = (gp[j]+scale)%255;
+            gpcp[j] = pgm_read_byte(Galois28Table + gpcp[j]);
+        }
+        // infoPoly - scale * genePoly * x^(N-M)
+        for(int j=0; j<QR_EC+1; j++){
+            ip[i+j] = ip[i+j]^gpcp[j];
+        }
+    }
+    //Concat
+    for(int i=0; i<QR_EC; i++){
+        buf[QR_DATA+i] = ip[QR_DATA+i];
+    }
+    
+    //............................................
+    // Step 5
+    // Add template
+    //............................................
+    for(int i=0; i<QR_BMP_SIZE; i++){
+        uint8_t col = pgm_read_byte(QRTemplate+8+i);
+        for(int k=7; k>=0; k--){
+            screen->SetPixel(i%21 + tx, i/21*8+k + ty, col>>k&0x01);
+        }
+    }
+
+    //............................................
+    // Step 3
+    // Map on 2D
+    //............................................
+    {
+        int i;
+        int x, y;
+        bool right, up;
+        //Division 0
+        i = 0;
+        x = QR_SIZE-1;
+        y = QR_SIZE-1;
+        up = true;
+        right = true;
+        for(; i<DIV_0; i++){ //12 Byte
+            uint8_t address = i/8;
+            uint8_t bit = 7-i%8;
+            uint8_t col = (buf[address] & (1<<bit)) >> bit;
+            WritePatternPixel(screen, x, y, tx, ty, col, MASK_MODE);
+            //Move
+            if(right){
+                right = false;
+                x--;
+            }else{
+                right = true;
+                if(up){
+                    if(y==9){
+                        up = false;
+                        x--;
+                    }else{
+                        x++;
+                        y--;
+                    }
+                }else{
+                    if(y==20){
+                        up = true;
+                        x--;
+                    }else{
+                        x++;
+                        y++;
+                    }
+                }
+            }
+        }
+        //Division 1
+        for(; i<DIV_1; i++){  //10 Byte
+            uint8_t address = i/8;
+            uint8_t bit = 7-i%8;
+            uint8_t col = (buf[address] & (1<<bit)) >> bit;
+            WritePatternPixel(screen, x, y, tx, ty, col, MASK_MODE);
+            //Move
+            if(right){
+                right = false;
+                x--;
+            }else{
+                right = true;
+                if(up){
+                    if(y==0){
+                        up = false;
+                        x--;
+                    }else{
+                        x++;
+                        y--;
+                        if(y==6)y--;
+                    }
+                }else{
+                    if(y==20){
+                        up = true;
+                        x--;
+                    }else{
+                        x++;
+                        y++;
+                        if(y==6)y++;
+                    }
+                }
+            }
+        }
+        //Division 2
+        x = 8;
+        y = 12;
+        for(; i<DIV_2; i++){  //4 Byte
+            uint8_t address = i/8;
+            uint8_t bit = 7-i%8;
+            uint8_t col = (buf[address] & (1<<bit)) >> bit;
+            WritePatternPixel(screen, x, y, tx, ty, col, MASK_MODE);
+            //Move
+            if(right){
+                right = false;
+                x--;
+            }else{
+                right = true;
+                if(up){
+                    if(y==9){
+                        up = false;
+                        x--;
+                        if(x==6) x--;
+                    }else{
+                        x++;
+                        y--;
+                    }
+                }else{
+                    if(y==12){
+                        up = true;
+                        x--;
+                        if(x==6) x--;
+                    }else{
+                        x++;
+                        y++;
+                    }
+                }
+            }
+        }
+    }
+
+    //............................................
+    // Step 4
+    // Header
+    //............................................
+    uint16_t header = 0;
+    header |= 0b01 << 13;     // Recovery mode L (01)
+    header |= MASK_MODE << 10;    // Mask mode (001)
+    // BCH Encode
+    uint16_t genePoly = 0b0000010100110111; // 0000 0101 0011 0111 
+    uint8_t geneDeg = 10;
+    uint16_t infoPoly = header;             // 0010 0100 0000 0000
+    uint8_t infoDeg = 5;
+    for(int i=4; i>=0; i--){
+        if((infoPoly >> (10+i)) & 1){
+            infoPoly ^= genePoly << i;
+        }
+    }
+    header |= infoPoly;
+    header ^= 0b101010000010010;
+    {
+        //for(int i=0; i<QR_BMP_SIZE; i++) dest[i] = 0x00;
+        uint8_t i = 0;
+        int x0 = 8;     // upper-left
+        int y0 = 0;
+        int x1 = 20;    // right-under
+        int y1 = 8;
+        for(; i<QR_HEAD_CON; i++){
+            uint8_t col;
+            if(header& (1<<i)) col = 0xFF;
+            else col = 0x00;
+            WritePatternPixel(screen, x0, y0, tx, ty, col, 0b111);
+            WritePatternPixel(screen, x1, y1, tx, ty, col, 0b111);
+            y0++;
+            if(y0==6) y0++;
+            x1--;
+        }
+        y0--;
+        x0--;
+        x1 = 8;
+        y1 = 14;
+        for(; i<QR_HEAD; i++){
+            uint8_t col;
+            if(header& (1<<i)) col = 0xFF;
+            else col = 0x00;
+            WritePatternPixel(screen, x0, y0, tx, ty, col, 0b111);
+            WritePatternPixel(screen, x1, y1, tx, ty, col, 0b111);
+            x0--;
+            if(x0==6) x0--;
+            y1++;
+        }
+    }
+    
+    
+    return;
+}
+
+void WritePatternPixel(GameLCD* dest, uint16_t x, uint16_t y, uint16_t tx, uint16_t ty, uint8_t col, uint8_t mask){
+	int by, bi;
+    by=((y/8)*QR_SIZE)+x;
+    bi=y % 8;
+    
+    switch(mask){
+        case 0b000 :
+            if((x+y)%2 == 0) col = !col;
+            break;
+        case 0b001 :
+            if(y%2 == 0) col = !col;
+            break;
+        case 0b010 :
+            if(x%3 == 0) col = !col;
+            break;
+        case 0b011 :
+            if((x+y)%3 == 0) col = !col;
+            break;
+        case 0b100 :
+            if(((y/2)+(x/3))%2 == 0) col = !col;
+            break;
+        case 0b111 :
+            break;
+        default:
+            col = 0x00;
+            break;
+    }
+     dest->SetPixel(x+tx, y+ty, col);
 }

@@ -48,6 +48,7 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 uint8_t GameFps = 60;
 bool BufL, BufC, BufR;
 uint64_t Frame = 0;
+uint16_t PreFrame = 0;
 // Status
 uint8_t Life = 6;
 uint8_t Love = 0;
@@ -82,11 +83,13 @@ void Save(){
   EEPROM.write(i++, Volume);
   EEPROM.write(i++, Luminance);
   EEPROM.write(i++, SleepTimeOut);
+  EEPROM.write(i++, PreFrame>>8);
+  EEPROM.write(i++, PreFrame&0x00FF);
   screen.Clear(0x00);
   screen.print("SAVEDATA", 18, 16);
   screen.print(" SAVING ", 18, 24);
   screen.update();
-  delay(500);
+  //delay(500);
 }
 void Load(){  
   // Signiture
@@ -115,11 +118,13 @@ void Load(){
   Volume = EEPROM.read(i++);
   Luminance = EEPROM.read(i++);
   SleepTimeOut = EEPROM.read(i++);
+  PreFrame = EEPROM.read(i++) * 0x100;
+  PreFrame += EEPROM.read(i++);  
   screen.Clear(0x00);
   screen.print("SAVEDATA", 18, 16);
   screen.print("LOADING", 18, 24);
   screen.update();
-  delay(1000);
+  //delay(1000);
 }
 void Clear(){
   for(uint8_t i=0; i<128; i++){
@@ -158,7 +163,56 @@ void Sleep(){
   set_sleep_mode(SLEEP_MODE_STANDBY); 
   sleep_mode(); // System go down.
 }
+void DebugLEDFlash(uint8_t count, uint8_t length){
+    pinMode(2,OUTPUT);
+    for(uint8_t i=0; i<count; i++){
+      digitalWrite(2, HIGH);
+      delay(length);
+      digitalWrite(2, LOW);
+      delay(length);
+    }
+}
 void SleepCatch(){
+  DebugLEDFlash(1, 100);
+  Load();
+  Frame += 160;
+  {
+    if((uint16_t)Frame-PreFrame > LIFE_INTERVAL) { // Interval is about 10s.
+      DebugLEDFlash(8, 50);
+      if(Life == 0){
+        // Dead
+      }else{
+        // Good Metabolic 
+        if(Love<6 && Sick==0 && Hungery<10 && Dirty==0 && Life==6){
+          Love++;
+          DebugLEDFlash(4, 150);
+        };
+        if(Life<6 && Sick==0 && Hungery<10 && Dirty==0) Life++;
+        // Bad Metabolic 
+        randomSeed(Frame%2000);
+        if(random(0, 3)==0){
+          if(Hungery < 100)Hungery++;
+          if(Dirty<2) Dirty++;
+          DebugLEDFlash(4, 150);
+        }
+        // Event
+        randomSeed(Frame);
+        if(Hungery>10 && Dirty>1 && random(0, 500)==0){
+          Sick = 1; 
+          DebugLEDFlash(4, 150);
+        }
+        // Damage
+        if(Hungery==100 || Sick==1){
+          if(Life>0)Life--;
+          if(Love>0)Love--;
+          DebugLEDFlash(4, 150);
+        }
+      }
+      PreFrame = (uint16_t)Frame;
+      Save();
+    }
+  }
+  Save();
   BtnDetectAll();
   if(btnL || btnC || btnR){
     // Wake up
@@ -172,6 +226,42 @@ void SceneInit(){
   BtnDetectAll();
   Frame++;
   screen.Clear(0x00);
+}
+bool LifeCycle(){
+  if((uint16_t)Frame-PreFrame > LIFE_INTERVAL) { // Interval is about 10s.
+    if(Life == 0){
+      // Dead
+    }else{
+      // Good Metabolic 
+      if(Love<6 && Sick==0 && Hungery<10 && Dirty==0 && Life==6){
+        Love++;
+        mp3_play(SE_GYN_0);
+      };
+      if(Life<6 && Sick==0 && Hungery<10 && Dirty==0) Life++;
+      // Bad Metabolic 
+      randomSeed(Frame%2000);
+      if(random(0, 3)==0){
+        if(Hungery < 100)Hungery++;
+        if(Dirty<2) Dirty++;
+        // AutoSave
+        //Save();
+      }
+      // Event
+      randomSeed(Frame);
+      if(Hungery>10 && Dirty>1 && random(0, 500)==0) Sick = 1;
+      // Damage
+      if(Hungery==100 || Sick==1){
+        if(Life>0)Life--;
+        if(Love>0)Love--;
+      }
+      // AutoSleep
+      randomSeed(Frame%1000);
+      //if(random(0, 20)==0) Sleep();
+    }
+    PreFrame = (uint16_t)Frame;
+    return true;
+  }
+  return false;
 }
 //............................................................
 //............................................................
@@ -290,33 +380,7 @@ void Start(){
 //............................................................
 void Update(){
   //Logic
-  if(Frame%LIFE_INTERVAL==0) { // Interval is about 10s.
-    if(Life == 0){
-      // Dead
-    }else{
-      // Good Metabolic 
-      if(Love<6 && Sick==0 && Hungery<10 && Dirty==0 && Life==6){
-        Love++;
-        mp3_play(SE_GYN_0);
-      };
-      if(Life<6 && Sick==0 && Hungery<10 && Dirty==0) Life++;
-      // Bad Metabolic 
-      if(Frame%(LIFE_INTERVAL*3)==0){
-        if(Hungery < 100)Hungery++;
-        if(Dirty<2) Dirty++;
-        // AutoSave
-        Save();
-      }
-      // Event
-      randomSeed(Frame);
-      if(Hungery>10 && Dirty>1 && random(0, 500)==0) Sick = 1;
-      // Damage
-      if(Hungery==100 || Sick==1){
-        if(Life>0)Life--;
-        if(Love>0)Love--;
-      }
-    }
-  }
+  LifeCycle();
   SceneInit();
   // Interface
   LifeSign->TexNo = Life;
@@ -670,6 +734,7 @@ void ConfigLauncher(){
     if(!Config(&i, selectionCount, &activSelection, &inSelection)) break;
     screen.update();
   }
+  delay(1000);
 }
 
 //............................................................

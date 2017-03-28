@@ -46,6 +46,9 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 //............................................................
 #define MENU_SEL_CNT  8
 #define LIFE_INTERVAL 2000
+#define HUNGRY_WEIGHT 3     // 1 .. 9
+#define DIRTY_WEIGHT  10    // 1 .. 10
+#define SICK_WAIGHT   3     // 1 .. 10
 uint8_t GameFps = 60;
 bool BufL, BufC, BufR;
 uint64_t Frame = 0;
@@ -195,13 +198,14 @@ void SleepCatch(){
         // Bad Metabolic 
         randomSeed(Frame%2000 + analogRead(5)%164);
         if(random(0, 3)==0){
-          if(Hungery < 100)Hungery++;
-          if(Dirty<2) Dirty++;
+          if(Hungery < 100)Hungery += HUNGRY_WEIGHT;
+          randomSeed(Frame%11 + analogRead(5)%74);
+          if(Dirty<2 && random(0, 10/DIRTY_WEIGHT)==0) Dirty++;
           //DebugLEDFlash(4, 150);
         }
         // Event
         randomSeed(Frame + analogRead(5)%81);
-        if(Hungery>10 && Dirty>1 && random(0, 3)==0){
+        if(Hungery>10 && Dirty>1 && random(0, 10/SICK_WAIGHT)==0){
           Sick = 1; 
           //DebugLEDFlash(4, 150);
         }
@@ -256,14 +260,15 @@ bool LifeCycle(){
       // Bad Metabolic 
       randomSeed(Frame%11 + analogRead(5)%74);
       if(random(0, 3)==0){
-        if(Hungery < 100)Hungery++;
-        if(Dirty<2) Dirty++;
+        if(Hungery < 100)Hungery += HUNGRY_WEIGHT;
+        randomSeed(Frame%11 + analogRead(5)%74);
+        if(Dirty<2 && random(0, 10/DIRTY_WEIGHT)==0) Dirty++;
         // AutoSave
         //Save();
       }
       // Event
       randomSeed(Frame%9 + analogRead(5)%69);
-      if(Hungery>10 && Dirty>1 && random(0, 3)==0) Sick = 1;
+      if(Hungery>10 && Dirty>1 && random(0, 10/SICK_WAIGHT)==0) Sick = 1;
       // Damage
       if(Hungery==100 || Sick==1){
         if(Life>0)Life--;

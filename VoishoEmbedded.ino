@@ -44,11 +44,14 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 //............................................................
 // GameDefine ................................................
 //............................................................
+#define SAVE_TOP      90
 #define MENU_SEL_CNT  8
 #define LIFE_INTERVAL 2000
+#define LIFE_ITVL_CHT 2000
 #define HUNGRY_WEIGHT 3     // 1 .. 9
 #define DIRTY_WEIGHT  10    // 1 .. 10
 #define SICK_WAIGHT   3     // 1 .. 10
+int LifeInterval = LIFE_INTERVAL;
 uint8_t GameFps = 60;
 bool BufL, BufC, BufR;
 uint64_t Frame = 0;
@@ -66,7 +69,7 @@ uint8_t Luminance = 4;
 uint8_t SleepTimeOut = 100;
 void Save(){
   // Signiture
-  uint8_t i = 0;
+  int16_t i = SAVE_TOP;
   EEPROM.write(i++, 'Y');
   EEPROM.write(i++, 'u');
   EEPROM.write(i++, 'k');
@@ -99,7 +102,7 @@ void Save(){
 }
 void Load(){  
   // Signiture
-  uint8_t i = 0;
+  int16_t i = SAVE_TOP;
   bool sig = true;
   sig &= EEPROM.read(i++) == 'Y';
   sig &= EEPROM.read(i++) == 'u';
@@ -134,7 +137,7 @@ void Load(){
   //delay(1000);
 }
 void Clear(){
-  for(uint8_t i=0; i<128; i++){
+  for(int16_t i=0; i<1024; i++){
     EEPROM.write(i, 0);
   }
   screen.Clear(0x00);
@@ -184,7 +187,7 @@ void SleepCatch(){
   Load();
   Frame += 160;
   if(Life>0){
-    if((uint16_t)Frame-PreFrame > LIFE_INTERVAL) { // Interval is about 10s.
+    if((uint16_t)Frame-PreFrame > LifeInterval) { // Interval is about 10s.
       //DebugLEDFlash(8, 50);
       if(Life == 0){
         // Dead
@@ -241,7 +244,7 @@ bool LifeCycle(){
     mp3_play(SE_DEAD);
     Dead = true;
   }
-  if((uint16_t)Frame-PreFrame > LIFE_INTERVAL) { // Interval is about 10s.
+  if((uint16_t)Frame-PreFrame > LifeInterval) { // Interval is about 10s.
     if(Life == 0){
       // Dead
     }else{
@@ -305,7 +308,27 @@ void InitIO(){
     digitalWrite(O0, LOW);
   }
 }
+void CheckFactorySign(){
+  int i = SAVE_TOP+256;
+  bool sign = true;
+  sign &= EEPROM.read(i++) == 'M';
+  sign &= EEPROM.read(i++) == 'S';
+  sign &= EEPROM.read(i++) == 'T';
+  sign &= EEPROM.read(i++) == 'N';
+  if(sign){
+    LifeInterval = LIFE_ITVL_CHT;
+
+  }
+}
+void WriteFactorySign(){
+  int i = SAVE_TOP+256;
+  EEPROM.write(i++, 'M');
+  EEPROM.write(i++, 'S');
+  EEPROM.write(i++, 'T');
+  EEPROM.write(i++, 'N');
+}
 void setup(){
+  CheckFactorySign();
   wdt_reset();
   SleepCatch();
   Load();

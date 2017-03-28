@@ -411,8 +411,8 @@ void Start(){
   uint8_t *lasagnaTex[] = {Bmp_menu_lasagna, Bmp_menu_lasagna1, Bmp_menu_lasagna2, Bmp_menu_lasagna3};
   Lasagna = new GameObject(&screen, lasagnaTex, 4);
   // Communication
-  uint8_t *comInsTex[] = {Bmp_qr_inst};
-  ComInstruntion = new GameObject(&screen, comInsTex, 1, 0, 0, 10);
+  uint8_t *comInsTex[] = {Bmp_qr_inst, Bmp_g_inst};
+  ComInstruntion = new GameObject(&screen, comInsTex, 2, 0, 0, 10);
 }
 //............................................................
 //............................................................
@@ -795,9 +795,9 @@ void ConfigLauncher(){
 bool Garally(uint8_t *timer , uint8_t *imageNo){
   SceneInit();
   // Interface
-  screen.print("/", 66, 2);
-  screen.printNumI(Maki->TexQuant, 71, 2);
-  screen.printNumI(*imageNo+1, 59, 2);
+  screen.print("/", 66, 9);
+  screen.printNumI(Maki->TexQuant, 71, 9);
+  screen.printNumI(*imageNo+1, 53, 9);
   selectionsText->Tx = 30;
   selectionsText->Ty = 1;
   selectionsText->Rend();
@@ -982,49 +982,68 @@ void Mingame0Launcher(){
 //............................................................
 //............................................................
 //............................................................
-void Game(uint8_t countDown, uint8_t* loveCnt){
+bool Game(int countDown, int maxTime, uint8_t* loveCnt){
   SceneInit();
-  //Information
+  // Interface
   screen.print("TIME", 1, 1);
-  screen.printNumI(countDown, 50, 1);
-  screen.print("SCORE", 1, 40);
-  screen.printNumI(*loveCnt, 50, 40);
-  //Interface
+  screen.printNumI(maxTime-countDown, 1, 9);
+  selectionsText->Tx = 29;
+  selectionsText->Ty = 1;
+  selectionsText->Rend();
+  screen.print("SCORE", 53, 1);
+  screen.printNumI(*loveCnt, 60, 9);
+  screen.print(" ^  ", 2, 40);
+  screen.print(" ^ ", 33, 40);
+  screen.print("  ^ ", 58, 40);
   //Maki
     // <-----------84-------------->
     // <--------59---------><--27-->
     // <-20--><--20-><--19->
+  randomSeed(countDown/20*99&111);
+  uint8_t pos = random(0,3)%3;
   Maki->Ty = 10;
-  Maki->Tx = (int)(sin((float)(300-countDown+(random(countDown/40)*3))/8)*16+screen.Width/2-Maki->GetWidth()/2);
-  Maki->TexNo = Frame/16%2;
-  Maki->Rend();
-  Hurt->Tx = Maki->Tx -5;
-  Hurt->Ty = Maki->Ty;
+  Maki->Tx = 4 + pos*26;
+  Maki->TexNo = Frame/16%2 + Rank*6;
+  Hurt->Tx = Maki->Tx-3;
+  Hurt->Ty = Maki->Ty+3;
   //Hand
+  bool hitting = false;
   if(btnL){
-    Hand->Tx = 10;
-    Hand->Ty = 13 + (int)(sin((float)Frame/2)*2);
-    Hand->Rend();
-    if(Maki->Tx<20) Hurt->Rend();
+    if(pos==0){
+      Maki->TexNo += 2;
+      hitting = true;
+    }
   }else if(btnC){
-    Hand->Tx = 30;
-    Hand->Ty = 13 + (int)(sin((float)Frame/2)*2);
-    Hand->Rend();
-    if(Maki->Tx>=20 && Maki->Tx<40) Hurt->Rend();
+    if(pos==1){
+      Maki->TexNo += 2;
+      hitting = true;
+    }
   }else if(btnR){
-    Hand->Tx = 50;
-    Hand->Ty = 13 + (int)(sin((float)Frame/2)*2);
-    Hand->Rend();
-    if(Maki->Tx>=40) Hurt->Rend();
+    if(pos==2){
+      Maki->TexNo += 2;
+      hitting = true;
+    }
   }
+  Maki->Rend();
+  if(hitting) Hurt->Rend();
   //HitCheck
-  if((btnDownL && Maki->Tx<20) || (btnDownC && Maki->Tx>=20 && Maki->Tx<40) || (btnDownR && Maki->Tx>=40)) {
+  if(btnDownL){
+    if(pos==0){
+      mp3_play(SE_GYN_0);
       (*loveCnt)++;
-      mp3_play(1);
-  } else if(btnDownL || btnDownC || btnDownR){
-      // fail effect
+    }
+  }else if(btnDownC){
+    if(pos==1){
+      mp3_play(SE_GYN_0);
+      (*loveCnt)++;
+    }
+  }else if(btnDownR){
+    if(pos==2){
+      mp3_play(SE_GYN_0);
+      (*loveCnt)++;
+    }
   }
-  screen.update();
+  return true;
 }
 void GameLauncher(){
   {
@@ -1033,10 +1052,10 @@ void GameLauncher(){
     selectionsText->Tx = 30;
     selectionsText->Ty = 1;
     selectionsText->Rend();
-    screen.print(" -- ", 2, 40);
+    screen.print("BACK", 2, 40);
     screen.print(" OK ", 30, 40);
     screen.print(" -- ", 58, 40);
-    //ComInstruntion->TexNo = 1;
+    ComInstruntion->TexNo = 1;
     ComInstruntion->Rend();
     screen.update();
     delay(2000);
@@ -1046,7 +1065,7 @@ void GameLauncher(){
       BtnDetectAll();
       if(btnDownL){
         mp3_play(SE_BTN_OK);
-        i = 0;
+        return;
       }
       if(btnDownC){
         mp3_play(SE_BTN_OK);
@@ -1059,8 +1078,12 @@ void GameLauncher(){
     }
   }
   //Main
+  int timeOut = 600;
   uint8_t loveCnt = 0;
-  for(uint8_t i=255; i>0; i--) Mingame0(i, &loveCnt);
+  for(int i=0; i<timeOut; i++){
+     if(!Game(i, timeOut, &loveCnt)) break;
+     screen.update();
+  }
   {
     SceneInit();
     // Interface

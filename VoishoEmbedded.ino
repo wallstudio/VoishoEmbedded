@@ -46,7 +46,7 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 8, 9, 10, 11, 12);
 //............................................................
 #define SAVE_TOP      90
 #define MENU_SEL_CNT  8
-#define LIFE_INTERVAL 2000
+#define LIFE_INTERVAL 10000
 #define LIFE_ITVL_CHT 2000
 #define HUNGRY_WEIGHT 3     // 1 .. 9
 #define DIRTY_WEIGHT  10    // 1 .. 10
@@ -492,6 +492,7 @@ void Update(){
     screen.printNumI(Frame >> 32 & 0x000000000000FFFF, 1, 16);
     screen.printNumI(Frame >> 16 & 0x000000000000FFFF, 1, 24);
     screen.printNumI(Frame >> 0  & 0x000000000000FFFF, 1, 32);
+    screen.printNumI(LifeInterval, 27, 0);
     screen.printNumI(Hungery, 27, 8);
     screen.printNumI(PreFrame, 27, 16);
     screen.printNumI(analogRead(5), 27, 24);
@@ -689,6 +690,7 @@ bool Clean(uint8_t *timer, uint8_t timeLength){
   // Dirt
   DirtySign->TexNo = 2-(*timer+15)/(timeLength/(3-1));
   DirtySign->Rend();
+  if(btnL && btnDownC && btnR) WriteFactorySign();
   return true;
 }
 void CleanLauncher(){

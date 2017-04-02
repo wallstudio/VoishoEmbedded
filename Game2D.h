@@ -28,6 +28,8 @@ class GameLCD : public LCD5110{
         uint8_t GetScrBuf(int index);
         void SetScrBuf(int index, uint8_t data);
         void Clear(uint8_t pattern);
+        void Roll180();
+        void update();
 };
 
 class GameObject{

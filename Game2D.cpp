@@ -50,7 +50,30 @@ void GameLCD::Clear(uint8_t pattern){
         SetScrBuf(i, pattern);
     }
 }
-
+void GameLCD::Roll180(){
+    for(int i=0; i<84*48/2; i++){
+            uint8_t tmp = GetPixel(i%84, i/84);
+            SetPixel(i%84, i/84, GetPixel(83-i%84, 47-i/84));
+            SetPixel(83-i%84, 47-i/84, tmp);
+    }
+}
+void GameLCD::update(){
+    if (_sleep==false){
+		_LCD_Write(PCD8544_SETYADDR, LCD_COMMAND);
+		_LCD_Write(PCD8544_SETXADDR, LCD_COMMAND);
+		for (int b=503; b>=0; b--){
+            uint8_t byteBuf  = scrbuf[b] << 7;
+            byteBuf |= (scrbuf[b] & 0b00000010) << 5;
+            byteBuf |= (scrbuf[b] & 0b00000100) << 3;
+            byteBuf |= (scrbuf[b] & 0b00001000) << 1;
+            byteBuf |= (scrbuf[b] & 0b00010000) >> 1;
+            byteBuf |= (scrbuf[b] & 0b00100000) >> 3;
+            byteBuf |= (scrbuf[b] & 0b01000000) >> 5;
+            byteBuf |= (scrbuf[b] & 0b10000000) >> 7;
+            _LCD_Write(byteBuf, LCD_DATA);
+        }
+	}
+}
 GameObject::GameObject(GameLCD *screen, uint8_t **tex, int quantity){
     RamTex = false;
     Screen = screen;

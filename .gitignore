@@ -1,6 +1,6 @@
 /.build/
 /.vscode/
-/Lisece/
+*/Lisece/
 /ImageToBinary/
 /audio/
 *.psd

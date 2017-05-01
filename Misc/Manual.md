@@ -1,5 +1,9 @@
 # けだまっち 取り扱いマニュアル ![](img/gyun1.png "") 
 
+常に最新版を確認してください．  
+[https://github.com/wallstudio/VoishoEmbedded/blob/master/Misc/Manual.md](https://github.com/wallstudio/VoishoEmbedded/blob/master/Misc/Manual.md)  
+
+
 * 製作者情報  
 うｐﾊｼ （WallStudio） ![](img/menu_credit.png "")  
 Twitter @yukawallstudio  
@@ -20,6 +24,7 @@ Twitter @yukawallstudio
 3. 使い方
 4. 育て方
 5. 免責事項
+6. （アップデート）
 
 ## 1. けだまっちとは？ ![](img/gyun0_nml.png "") 
 けだまっちとはVOICEROID弦巻マキの派生キャラクター「**けだマキマキ**」をモチーフにしたグッズです．  
@@ -61,6 +66,9 @@ Twitter @yukawallstudio
 ![](http:// "")
 1. 背面のカバーを閉じます．ネジでかるく固定してください．
 ![](http:// "")
+### 外部電源
+USBから電源を取ることが出来ます．端子はMini USBです．これは一般的なスマートフォンの端子（Micro USB）とは互換性が無いので注意してください．Mini USBケーブルは家電量販店や100円ショップでも手に入ります．  
+※乾電池がつながっているときは乾電池が優先して消費されますので，乾電池を外して繋げてください．
 ### オーディオの切り替え
 けだまっちはスピーカーを搭載していて音が出ます．しかしながら，アンプがかなりの電力を消費するため，手動でOFFにすることが出来ます．
 1. 背面のネジを外しカバーを開けます．
@@ -119,3 +127,22 @@ QRコードが表示されそれを読み込むことで他の機器と連携が
 けだまっちそのものの**アフターサポートは基本的に行えません**．一応，ご連絡いただければお答えするかもしれませんが，これは必ずできるものではありません．
 
 けだまっちが故障した場合の修理は**無償・有償含め行えません**．設計書は公開（[https://github.com/wallstudio/VoishoEmbedded (Github)](https://github.com/wallstudio/VoishoEmbedded)）されているので，ご自身で修理する助けになるかもしれません．
+
+## 6. アップデート
+基本的にアップデートによるサポートはありませんが，場合によってはアップデートを配信する可能性はあります．その際には以下の手順でPC経由によるアップデートを行うことが出来ます．（Windows10以降だとドライバが不要で楽です）
+1. Arduino IDEのインストール  
+PCで [https://www.arduino.cc/en/main/software](https://www.arduino.cc/en/main/software) よりArduino IDEをダウンロードします．（Arduinoに寄付をしない場合「Just download」を選べばダウンロードが始まります）
+2. Arduino IDEのインストーラからインストールを実行します．  
+![](img/ardIns.png "") 
+3. Mini USBケーブルでPCとけだまっちをつなぎます．  
+PCに認識されない場合，CH340ドライバをインストールしてください．
+4. ソースコードのダウンロード  
+[https://github.com/wallstudio/VoishoEmbedded](https://github.com/wallstudio/VoishoEmbedded) よりプロジェクトをダウンロードします．
+![](img/gitDl.png "") 
+5. 解凍し「VoishoEmbedded.ino」をArduino IDEで開きます．
+6. 「ツール」 → 「ボード」で「Arduino Genuino/Uno」を選択，「ツール」 → 「シリアルポート」で新しく追加されたCOMポートを選択（普通COM1の外にもう一つCOMが現れるので，それを選んでください．）
+![](img/ardDev.png "") 
+![](img/ardCom.png "") 
+7. コンパイルボタンを押します．  
+![](img/ardCompile.png "") 
+8. 「スケッチのアップロードが完了しました」と表示されれば成功です．エラーが出る場合ここまでの手順を再確認してください．

@@ -2,6 +2,7 @@
 
 常に最新版を確認してください．  
 [https://github.com/wallstudio/VoishoEmbedded/blob/master/Misc/Manual.md](https://github.com/wallstudio/VoishoEmbedded/blob/master/Misc/Manual.md)  
+![](img/manual.png "")  
 
 
 * 製作者情報  

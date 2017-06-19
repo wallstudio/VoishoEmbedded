@@ -299,9 +299,9 @@ void InitAudio(){
 void InitIO(){
   Serial.begin(9600);
   pinMode(O0,OUTPUT);
-  pinMode(I0,INPUT);
-  pinMode(I1,INPUT);
-  pinMode(I2,INPUT);
+  pinMode(I0,INPUT_PULLUP);
+  pinMode(I1,INPUT_PULLUP);
+  pinMode(I2,INPUT_PULLUP);
   if(Luminance > 0){
     digitalWrite(O0, HIGH);
   }else{

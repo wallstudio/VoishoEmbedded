@@ -6,9 +6,9 @@
 void setup() {
   Serial.begin(9600);
 
-  pinMode(I0,INPUT);
-  pinMode(I1,INPUT);
-  pinMode(I2,INPUT);
+  pinMode(I0,INPUT_PULLUP);
+  pinMode(I1,INPUT_PULLUP);
+  pinMode(I2,INPUT_PULLUP);
 }
 
 void loop() { 

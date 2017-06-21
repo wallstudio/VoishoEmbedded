@@ -224,6 +224,9 @@ void SleepCatch(){
     }
   }
   Save();
+  pinMode(I0,INPUT_PULLUP);
+  pinMode(I1,INPUT_PULLUP);
+  pinMode(I2,INPUT_PULLUP);
   BtnDetectAll();
   if(btnL || btnC || btnR){
     // Wake up

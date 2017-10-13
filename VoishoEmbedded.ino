@@ -23,8 +23,15 @@
 #define SCREEN_BUF_SYSE 504
 #define SCREEN_WIDTH    84
 #define SCREEN_HEIGHT   48
+#define CLK_PIN  4
+#define DIN_PIN  5
+#define DC_PIN   6
+#define RST_PIN  8
+#define CE_PIN   7
+#define LED_PIN  2
+#define FLIP_LED 1
 extern uint8_t SmallFont[];
-GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 4, 5, 6, 7, 12);
+GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, CLK_PIN, DIN_PIN, DC_PIN, RST_PIN, 12);
 //............................................................
 // Audio .....................................................
 //............................................................
@@ -40,7 +47,7 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, 4, 5, 6, 7, 12);
 #define I0 14
 #define I1 15
 #define I2 16
-#define O0 3
+#define O0 LED_PIN
 //............................................................
 // GameDefine ................................................
 //............................................................
@@ -165,7 +172,7 @@ void BtnDetectAll(){
 }
 // Sleep
 void Sleep(){
-  digitalWrite(O0, LOW);
+  digitalWrite(O0, FLIP_LED ^  LOW);
   pinMode(O0, INPUT);
   Save();
   wdt_reset();
@@ -306,9 +313,9 @@ void InitIO(){
   pinMode(I1,INPUT_PULLUP);
   pinMode(I2,INPUT_PULLUP);
   if(Luminance > 0){
-    digitalWrite(O0, HIGH);
+    digitalWrite(O0, FLIP_LED ^  HIGH);
   }else{
-    digitalWrite(O0, LOW);
+    digitalWrite(O0, FLIP_LED ^  LOW);
   }
 }
 void CheckFactorySign(){
@@ -331,6 +338,10 @@ void WriteFactorySign(){
   EEPROM.write(i++, 'N');
 }
 void setup(){
+  // Chip enable
+  pinMode(CE_PIN, OUTPUT);
+  digitalWrite(CE_PIN, LOW);
+  
   CheckFactorySign();
   wdt_reset();
   SleepCatch();
@@ -778,9 +789,9 @@ bool Config(uint8_t *timer, uint8_t selectionCount, uint8_t *confNo, int8_t *mod
       InitAudio();
       mp3_play(SE_BTN_OK);
       if(Luminance > 0){
-        digitalWrite(O0, HIGH);
+        digitalWrite(O0, FLIP_LED ^  HIGH);
       }else{
-        digitalWrite(O0, LOW);
+        digitalWrite(O0, FLIP_LED ^  LOW);
       }
       *mode = -1;
     }

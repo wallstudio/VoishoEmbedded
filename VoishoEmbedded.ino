@@ -14,6 +14,8 @@
 #include "bitmap.h"
 #include "Game2D.h"
 #include "QREncode.h"
+
+#define TES_MODE true
 //............................................................
 //............................................................
 //..................... HARDWARE PREPARE .....................
@@ -343,8 +345,10 @@ void setup(){
   digitalWrite(CE_PIN, LOW);
   
   CheckFactorySign();
-  wdt_reset();
-  SleepCatch();
+  if (!TES_MODE){
+    wdt_reset();
+    SleepCatch();
+  }
   Load();
   InitIO();
   screen.ClearInitLCD();

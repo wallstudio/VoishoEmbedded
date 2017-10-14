@@ -6,9 +6,9 @@
 
 
 * 製作者情報  
-うｐﾊｼ （WallStudio） ![](img/menu_credit.png "")  
-Twitter @yukawallstudio  
-メール yukawallstudio＠gmail.com  
+    うｐﾊｼ （WallStudio） ![](img/menu_credit.png "")  
+    Twitter [@yukawallstudio](https://twitter.com/yukawallstudio)  
+    メール [yukawallstudio＠gmail.com](mailto:yukawallstudio＠gmail.com) 
 
 * 権利表記  
 ![](img/wallstudio.png "")  
@@ -16,8 +16,8 @@ Twitter @yukawallstudio
 私的利用の範囲を逸脱した利用を禁じます．  
 「弦巻マキ」および「結月ゆかり」は株式会社AHSのキャラクターです．  
 けだまっちは申請名「VOIしょ（仮）」としてこの作品は株式会社AHSにて許諾を受けています．  
-「けだマキマキ」は@AlucarDx2氏と@sakadynamic氏による弦巻マキの二次創作作品を@Omae_Dahlia氏がミックスアレンジしたものです．  
-「けだマキマキ」二次利用は@Omae_Dahlia氏，@AlucarDx2氏，@sakadynamic氏に許諾を受けています．  
+「けだマキマキ」は[@AlucarDx2](https://twitter.com/AlucarDx2)氏と[@sakadynamic](https://twitter.com/@sakadynamic)氏による弦巻マキの二次創作作品を[@Omae_Dahlia](https://twitter.com/Omae_Dahlia)氏がミックスアレンジしたものです．  
+「けだマキマキ」二次利用は[@Omae_Dahlia](https://twitter.com/Omae_Dahlia)氏，[@AlucarDx2](https://twitter.com/AlucarDx2)氏，[@sakadynamic](https://twitter.com/@sakadynamic)氏に許諾を受けています．  
 
 ## 目次 ![](img/gyun0_egg.png "") 
 1. けだまっちとは？
@@ -41,12 +41,12 @@ Twitter @yukawallstudio
 
 ## 3．使い方 ![](img/gyun0_nml_baby.png "") 
 ### 初めての起動
-1. 背面の**色のついたネジ**を外しカバーを開けます．  
-![](img/open.jpg "")
-![](img/internal.jpg "")
+1. 背面のカバーをスライドして開けます．爪を入れ少し浮かせるようにしてスライドさせると簡単に外れます  
+![](http:// "")
+![](http:// "")
 1. 乾電池の端子についた絶縁体を取り除きます．
 ![](http:// "")
-1. 背面のカバーを閉じます．ネジでかるく固定してください．
+1. 背面のカバーを閉じます．
 ![](http:// "")
 1. 正面のボタンのいずれかを長押し（～10秒）してください．
 ![](http:// "")
@@ -61,25 +61,20 @@ Twitter @yukawallstudio
 ### 電池交換
 1. 使用する乾電池は 6LR61 または 6F22です．これはコンビニや100円ショップでも売られている四角い9Vのものです．（6V以上の電圧が得られるようにしてください）
 ![](http:// "")
-1. 背面のネジを外しカバーを開けます．
+1. 背面のカバーを開けます．
 ![](http:// "")
 1. 入っている電池をコネクタの端子部分をつまんで外します．
 ![](http:// "")
 1. 正極負極を確認して新しい電池を接続します．
 ![](http:// "")
-1. 背面のカバーを閉じます．ネジでかるく固定してください．
+1. 背面のカバーを閉じます．
 ![](http:// "")
+
+※中が狭くて入り辛い/だし辛いかもしれません．壊さないように頑張って出し入れするしかありません…
 ### 外部電源
 USBから電源を取ることが出来ます．端子はMini USBです．これは一般的なスマートフォンの端子（Micro USB）とは互換性が無いので注意してください．Mini USBケーブルは家電量販店や100円ショップでも手に入ります．  
-※乾電池がつながっているときは乾電池が優先して消費されますので，乾電池を外して繋げてください．
-### オーディオの切り替え
-けだまっちはスピーカーを搭載していて音が出ます．しかしながら，アンプがかなりの電力を消費するため，手動でOFFにすることが出来ます．
-1. 背面のネジを外しカバーを開けます．
-![](http:// "")
-1. スイッチがあるので切り替えます．（下側がオーディオON，上側がオーディオOFFです）
-![](img/audioSwitch.jpg "")
-1. 背面のカバーを閉じます．ネジでかるく固定してください．
-![](http:// "")
+
+※乾電池がつながっているときは乾電池を外して繋げてください．
 ### 操作
 1. ボタンは3つあり，画面の下部に対応した位置にそれぞれのボタンの意味が表示されます．（例: HOME画面では，右ボタンがSLEEP，中央ボタンがMENUE，左ボタンは無効になっています）
 

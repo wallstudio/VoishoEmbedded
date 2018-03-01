@@ -15,7 +15,7 @@
 #include "Game2D.h"
 #include "QREncode.h"
 
-#define TES_MODE true
+#define TES_MODE false
 //............................................................
 //............................................................
 //..................... HARDWARE PREPARE .....................
@@ -31,7 +31,7 @@
 #define RST_PIN  8
 #define CE_PIN   7
 #define LED_PIN  2
-#define FLIP_LED 1
+#define FLIP_LED !false
 extern uint8_t SmallFont[];
 GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, CLK_PIN, DIN_PIN, DC_PIN, RST_PIN, 12);
 //............................................................
@@ -46,9 +46,9 @@ GameLCD screen(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BUF_SYSE, CLK_PIN, DIN_PIN, D
 //............................................................
 // I/O .......................................................
 //............................................................
-#define I0 14
+#define I0 16
 #define I1 15
-#define I2 16
+#define I2 14
 #define O0 LED_PIN
 //............................................................
 // GameDefine ................................................
